@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AASPI publications</title>
+<meta name="description" content="Searchable list of AASPI publications by year, type, topic, and author.">
+<style>
+:root{
+  --crimson:#841617;
+  --crimson-dark:#5E0F10;
+  --ink:#16191C;
+  --slate:#5C6670;
+  --rule:#C9CDD2;
+  --wash:#F4F6F7;
+  --paper:#FFFFFF;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:16px;line-height:1.5;
+}
+a{color:var(--crimson)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid var(--crimson);outline-offset:2px;
+}
+
+/* ---------- masthead ---------- */
+.masthead{border-top:6px solid var(--crimson);background:var(--paper)}
+.masthead-inner{max-width:1180px;margin:0 auto;padding:22px 20px 26px}
+.eyebrow{
+  font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--crimson);margin:0 0 6px;font-weight:600;
+}
+h1{
+  font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,40px);
+  margin:0;line-height:1.12;letter-spacing:-.01em;
+}
+.standfirst{
+  font-family:var(--serif);font-style:italic;color:var(--slate);
+  margin:8px 0 0;max-width:62ch;font-size:17px;
+}
+.searchbar{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.searchfield{position:relative;flex:1 1 420px;min-width:0}
+#q{
+  width:100%;font:inherit;font-size:17px;padding:12px 40px 12px 14px;
+  border:1px solid var(--rule);border-radius:2px;background:var(--wash);color:var(--ink);
+}
+#q::placeholder{color:#8A939C}
+.clearq{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  border:0;background:none;color:var(--slate);font-size:20px;line-height:1;
+  padding:4px 8px;cursor:pointer;display:none;
+}
+.tally{color:var(--slate);font-size:14.5px}
+.tally b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px;display:grid;gap:34px;
+  grid-template-columns:250px minmax(0,1fr);align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:1fr;gap:22px}}
+
+/* ---------- filters ---------- */
+.filters{position:sticky;top:14px;border-top:1px solid var(--rule);padding-top:14px}
+@media (max-width:860px){.filters{position:static}}
+.facet{margin:0 0 22px}
+.facet h2{
+  font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--crimson);
+  margin:0 0 9px;font-weight:600;
+}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px}
+.chip{
+  font:inherit;font-size:13.5px;padding:4px 9px;border:1px solid var(--rule);
+  background:var(--paper);color:var(--ink);border-radius:2px;cursor:pointer;
+  font-variant-numeric:tabular-nums;
+}
+.chip:hover{border-color:var(--slate)}
+.chip[aria-pressed="true"]{background:var(--crimson);border-color:var(--crimson);color:#fff}
+.chip .n{color:var(--slate);font-size:12px;margin-left:4px}
+.chip[aria-pressed="true"] .n{color:rgba(255,255,255,.8)}
+.chip[disabled]{opacity:.35;cursor:default}
+.taglist{display:flex;flex-direction:column;gap:3px}
+.subhead{
+  font-family:var(--serif);font-style:italic;color:var(--slate);
+  font-size:14px;margin:12px 0 5px;
+}
+.subhead:first-child{margin-top:0}
+.row{
+  display:flex;align-items:baseline;gap:7px;width:100%;text-align:left;
+  font:inherit;font-size:14.5px;background:none;border:0;border-radius:2px;
+  padding:3px 5px;margin-left:-5px;cursor:pointer;color:var(--ink);
+}
+.row:hover{background:var(--wash)}
+.row[aria-pressed="true"]{color:var(--crimson-dark);font-weight:600}
+.row .n{margin-left:auto;color:var(--slate);font-size:12.5px;font-variant-numeric:tabular-nums;font-weight:400}
+.row .box{
+  flex:0 0 auto;width:11px;height:11px;border:1px solid var(--rule);
+  background:var(--paper);position:relative;top:1px;
+}
+.row[aria-pressed="true"] .box{background:var(--crimson);border-color:var(--crimson)}
+.authorfind{
+  width:100%;font:inherit;font-size:14px;padding:6px 8px;margin-bottom:7px;
+  border:1px solid var(--rule);border-radius:2px;background:var(--paper);
+}
+.more{
+  font:inherit;font-size:13.5px;background:none;border:0;color:var(--crimson);
+  cursor:pointer;padding:4px 0;text-decoration:underline;
+}
+.reset{
+  font:inherit;font-size:14px;background:none;border:1px solid var(--rule);
+  border-radius:2px;padding:7px 10px;cursor:pointer;color:var(--ink);width:100%;
+}
+.reset:hover{border-color:var(--slate)}
+
+/* ---------- results ---------- */
+.toolbar{
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  border-top:1px solid var(--rule);padding-top:14px;margin-bottom:6px;
+}
+.toolbar label{font-size:14px;color:var(--slate)}
+.toolbar select{font:inherit;font-size:14px;padding:5px 7px;border:1px solid var(--rule);
+  border-radius:2px;background:var(--paper);color:var(--ink)}
+.yearband{
+  display:flex;align-items:baseline;gap:12px;margin:30px 0 4px;
+  border-bottom:1px solid var(--crimson);padding-bottom:4px;
+}
+.yearband h2{
+  font-family:var(--serif);font-size:30px;font-weight:600;margin:0;color:var(--crimson);
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+}
+.yearband span{color:var(--slate);font-size:13.5px}
+.pub{border-bottom:1px solid var(--rule);padding:15px 0 14px}
+.pub h3{
+  font-family:var(--serif);font-size:18.5px;line-height:1.3;font-weight:600;
+  margin:0 0 5px;max-width:74ch;
+}
+.pub h3 a{text-decoration:none;color:var(--ink);border-bottom:1px solid var(--rule)}
+.pub h3 a:hover{color:var(--crimson);border-bottom-color:var(--crimson)}
+.authors{color:var(--ink);font-size:14.5px;margin:0 0 3px;max-width:78ch}
+.authors button{
+  font:inherit;background:none;border:0;padding:0;color:inherit;cursor:pointer;
+  border-bottom:1px dotted var(--rule);
+}
+.authors button:hover{color:var(--crimson);border-bottom-color:var(--crimson)}
+.venue{font-family:var(--serif);font-style:italic;color:var(--slate);font-size:14.5px;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.kind{
+  font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--crimson-dark);
+  border:1px solid rgba(132,22,23,.35);background:rgba(132,22,23,.05);
+  padding:2px 7px;border-radius:2px;
+}
+.tag{
+  font-size:12.5px;color:var(--slate);background:var(--wash);border:1px solid var(--rule);
+  padding:2px 7px;border-radius:2px;cursor:pointer;font-family:inherit;
+}
+.tag:hover{color:var(--crimson);border-color:var(--crimson)}
+.pubtools{display:flex;gap:12px;margin-top:8px;font-size:13.5px}
+.pubtools button,.pubtools a{
+  font:inherit;font-size:13.5px;background:none;border:0;padding:0;
+  color:var(--crimson);cursor:pointer;text-decoration:underline;
+}
+.abstract{
+  margin:10px 0 0;padding-left:12px;border-left:2px solid var(--rule);
+  font-size:15px;max-width:76ch;color:#2A2F35;
+}
+.abstract[hidden]{display:none}
+mark{background:#F7E6A8;color:inherit;padding:0 1px}
+.empty{padding:40px 0;max-width:60ch}
+.empty h2{font-family:var(--serif);font-size:22px;margin:0 0 8px}
+.note{
+  background:var(--wash);border:1px solid var(--rule);border-left:3px solid var(--crimson);
+  padding:12px 14px;margin:18px 0 0;font-size:14.5px;color:#2A2F35;
+}
+footer{
+  max-width:1180px;margin:0 auto;padding:22px 20px 60px;border-top:1px solid var(--rule);
+  color:var(--slate);font-size:14px;
+}
+footer p{margin:0 0 7px;max-width:80ch}
+.loading{padding:50px 0;color:var(--slate)}
+@media (prefers-reduced-motion:no-preference){
+  .pub{transition:background .12s ease}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">Attribute-Assisted Seismic Processing &amp; Interpretation</p>
+    <h1>AASPI publications</h1>
+    <p class="standfirst">Papers, expanded abstracts, and columns from the AASPI consortium at the University of Oklahoma. Search by title, author, venue, or abstract text, or narrow the list with the filters.</p>
+    <div class="searchbar">
+      <div class="searchfield">
+        <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search publications</label>
+        <input id="q" type="search" placeholder="coherence, Taranaki, Lubo-Robles, gas hydrates&hellip;" autocomplete="off">
+        <button class="clearq" id="clearq" title="Clear search" aria-label="Clear search">&times;</button>
+      </div>
+      <p class="tally" id="tally">Loading&hellip;</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="filters" id="filters" aria-label="Filters"></aside>
+  <main>
+    <div class="toolbar">
+      <label for="sort">Order</label>
+      <select id="sort">
+        <option value="year-desc">Newest year first</option>
+        <option value="year-asc">Oldest year first</option>
+        <option value="title">Title, A&ndash;Z</option>
+        <option value="venue">Venue, A&ndash;Z</option>
+      </select>
+    </div>
+    <div id="results"><p class="loading">Loading the publication list&hellip;</p></div>
+  </main>
+</div>
+
+<footer>
+  <p><strong>Updating the list:</strong> replace <code>data/AASPI_pubs.xlsx</code> in this repository, keeping the file name and the <code>Complete</code> sheet. The page reads the spreadsheet directly, so a new upload changes the list with no other edits. Column names it expects: Title, Year, Type, Authors, Journal, DOI, URL, Abstract.</p>
+  <p>Compiled by Heather Bedle, School of Geosciences, University of Oklahoma. This list is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; the publications themselves stay with their publishers.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* -------------------------------------------------------------
+   AASPI publications browser
+   Reads data/AASPI_pubs_working_list.xlsx in the browser with
+   SheetJS, builds facets, and renders the list grouped by year.
+   ------------------------------------------------------------- */
+
+const DATA_FILES = ['data/AASPI_pubs.xlsx', 'data/AASPI_pubs_working_list.xlsx'];
+const SHEET = 'Complete';
+
+/* ---- type labels ---- */
+const TYPE_LABELS = {
+  'journal-article':'Journal article',
+  'journalarticle':'Journal article',
+  'review':'Review article',
+  'proceedings-article':'Expanded abstract',
+  'conference-abstract':'Conference abstract',
+  'magazine-article':'Magazine column',
+  'posted-content':'Preprint',
+  'book-chapter':'Book chapter',
+  'report':'Report'
+};
+const TYPE_ORDER = ['Journal article','Review article','Expanded abstract','Conference abstract',
+                    'Magazine column','Preprint','Book chapter','Report','Other'];
+
+/* ---- topic dictionary: label -> pattern ---- */
+const TOPICS = {
+  'Attributes & methods':[
+    ['Coherence',                /coherenc|semblance|discontinuit/i],
+    ['Curvature & aberrancy',    /curvature|aberranc|flexure|reflector rotation|convergence/i],
+    ['Dip & azimuth',            /reflector dip|\bdip\b|dip estimation|structure.tensor/i],
+    ['Spectral decomposition',   /spectral decomposition|spectral balanc|spectral component|time.frequency|wavelet transform|frequency components|multispectral|mode decomposition/i],
+    ['Attenuation & Q',          /attenuation|apparent attenuation|\bQ estimation|absorption/i],
+    ['AVO & anisotropy',         /\bAVO\b|\bAVA[Zz]\b|amplitude variation with offset|anisotrop|azimuthal|angle stack/i],
+    ['Inversion & impedance',    /inversion|impedance|\bTOC\b|brittleness/i],
+    ['Distance-quadrant (DQ)',   /distance[ -]?(?:and[ -]?)?quadrant|\bDQ\b|\bRDQ\b/i],
+    ['Texture & GLCM',           /\bGLCM\b|co-?occurrence|texture/i],
+    ['Self-organizing maps',     /self.organizing|\bSOM\b|Kohonen/i],
+    ['Generative topographic maps',/generative topographic|\bGTM\b/i],
+    ['PCA & ICA',                /principal component|independent component|\bPCA\b|\bICA\b/i],
+    ['Machine learning',         /machine learning|unsupervised|supervised|neural network|deep learning|random forest|\bCNN\b|support vector|clustering|classification|autoencoder|auto.encoder|explainable|\bSHAP\b|\bLLM\b/i],
+    ['Seismic facies',           /facies/i],
+    ['Faults & fractures',       /fault|fractur|lineament|damage zone/i],
+    ['Processing, conditioning & noise',/footprint|noise suppress|denois|structure.oriented filter|conditioning|interpolation|filtering|migration|ground.?roll|multiples/i],
+    ['Wells, logs & rock physics',/well log|petrophysic|\bcore\b|rock physic|well.tie|fluid substitution|image log/i],
+    ['Modeling & resolution',    /synthetic|forward model|resolution|tuning|thin.bed|simulation|reservoir model/i],
+    ['Uncertainty & parameterization',/uncertaint|sensitivity|parameteriz|pitfall|credibility|subjectivit|critical thinking/i],
+    ['Visualization & color',    /visualiz|color|corender|co-?render|\bRGB\b|\bHSV\b|crossplot|display/i],
+    ['Horizons & stratigraphy',  /horizon|stratigraph|parasequence|geomorpholog|sequence stratigraph/i]
+  ],
+  'Geology & setting':[
+    ['Deepwater channels & MTDs',/channel|turbidit|deep.?water|submarine|mass transport|\bMTD\b|levee|crevasse|slope.gull/i],
+    ['Carbonates & reefs',       /carbonate|reef|limestone|chert|karst|dolomit|pre.?salt|Arbuckle|Hunton/i],
+    ['Shales & unconventionals', /shale|Barnett|Woodford|Wolfcamp|Marcellus|Eagle Ford|unconventional|resource play|hydraulic/i],
+    ['Salt, volcanics & basement',/\bsalt\b|volcan|igneous|intrusi|diapir|basement|orogen|Precambrian/i],
+    ['Gas hydrates',             /hydrate|\bBSR\b/i],
+    ['CO2 storage',              /\bCO2\b|carbon capture|sequestrat|carbon storage|\bCCS\b/i],
+    ['Geothermal',               /geothermal/i],
+    ['Earthquakes & induced seismicity',/earthquake|induced seismicity|microseismic|wastewater|disposal|seismogenic/i],
+    ['Offshore wind & hazards',  /wind farm|offshore wind|geohazard|\bhazard/i],
+    ['Fluids & low saturation gas',/gas saturation|low saturation|fluid|water contact|bright spot|hydrocarbon indicator|seep/i],
+    ['Dunes, deltas & shallow marine',/dune|delta|fluvial|incised valley|shoreface|clinoform|tidal/i]
+  ],
+  'Region':[
+    ['New Zealand',   /New Zealand|Taranaki|Canterbury|Great South Basin|Pegasus|Hikurangi|Kerry|Romney|Kora|Parihaka|Nimitz|Kokako|Maui/i],
+    ['Gulf of Mexico',/Gulf of Mexico|Eugene Island|Mexico\b.*deep|Chicontepec/i],
+    ['Brazil',        /Brazil|Santos|Campos|Cear[aá]|Equatorial Margin|Jubarte|Mund[aá]u|Mero/i],
+    ['Australia',     /Australia|Exmouth|Carnarvon|Browse|Traella/i],
+    ['Oklahoma & midcontinent',/Oklahoma|Anadarko|Osage|Mississippian|Mississippi Lime|Fort Worth|STACK|SCOOP|Nemaha|Arkoma|Red Fork|Kansas|Wellington/i],
+    ['Permian & Midland',/Midland|Permian|Delaware Basin|Central Basin Platform|Spraberry|Texas Panhandle|west Texas/i],
+    ['Alaska',        /Alaska|North Slope|Nanushuk|Torok/i],
+    ['China',         /China|Sichuan|Bohai|Tarim|Tuha|Wangxuzhuang|Chinese/i],
+    ['North Sea & NW Europe',/North Sea|Norwegian|Netherlands|Hugin|Forties|Nova Scotia|Scotian|United Kingdom/i],
+    ['South America (other)',/Colombia|Chile|Magallanes|Venezuela|Argentina|Magdalena/i],
+    ['Africa & Middle East',/Middle East|Saudi|Abu Dhabi|Nigeria|Africa|Egypt/i],
+    ['Asia (other)',  /India|Assam|Vietnam|Cuu Long|Indonesia|Japan/i]
+  ]
+};
+
+let RECORDS = [];
+const state = {
+  q:'', years:new Set(), types:new Set(), topics:new Set(), authors:new Set(),
+  sort:'year-desc', showUndated:false, showAllAuthors:false, authorFind:''
+};
+
+/* ---------------- helpers ---------------- */
+const decode = s => !s ? '' : String(s)
+  .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+  .replace(/&quot;/g,'"').replace(/&#x27;|&apos;/g,"'").replace(/&nbsp;/g,' ').trim();
+
+const clean = s => decode(s).replace(/\s+/g,' ').replace(/\/td>$/,'').trim();
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const PARTICLES = new Set(['de','del','da','dos','van','von','der','la','le','di','du','al','bin','ben']);
+
+function splitAuthors(raw){
+  const s = clean(raw);
+  if(!s) return [];
+  return s.split(/\s*(?:,|;|\band\b|&)\s*/i)
+    .map(t => t.replace(/\*/g,'').replace(/\b(Jr|Sr|II|III)\.?$/i,'').trim())
+    .filter(t => t.length > 1 && /[A-Za-z]/.test(t));
+}
+
+function authorKey(name){
+  const parts = name.replace(/\./g,'. ').split(/\s+/).filter(Boolean);
+  if(!parts.length) return null;
+  let last = parts[parts.length-1];
+  let i = parts.length - 2;
+  while(i >= 1 && PARTICLES.has(parts[i].toLowerCase().replace(/\./g,''))){
+    last = parts[i] + ' ' + last; i--;
+  }
+  const first = parts[0] || '';
+  const initial = first.replace(/[^A-Za-z]/g,'').charAt(0).toUpperCase();
+  const surname = last.replace(/[^A-Za-z\-' ]/g,'');
+  if(!surname) return null;
+  return {key: surname.toLowerCase() + '|' + initial, surname, initial};
+}
+
+function topicsFor(text){
+  const out = [];
+  for(const group in TOPICS){
+    for(const [label, re] of TOPICS[group]){
+      if(re.test(text)) out.push(label);
+    }
+  }
+  return out;
+}
+
+/* ---------------- load ---------------- */
+async function load(){
+  let err = null;
+  for(const file of DATA_FILES){
+    try{
+      const res = await fetch(file, {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      build(await res.arrayBuffer());
+      return;
+    }catch(e){ err = e; }
+  }
+  {
+    document.getElementById('results').innerHTML =
+      '<div class="empty"><h2>The spreadsheet did not load</h2>' +
+      '<p>The page looks for <code>' + DATA_FILES[0] + '</code> in this repository (' + esc(err ? err.message : 'not found') + '). ' +
+      'Opening index.html straight off a local disk also blocks the read &mdash; either serve the folder ' +
+      '(<code>python -m http.server</code>) or pick the file here:</p>' +
+      '<p><input type="file" id="pick" accept=".xlsx"></p></div>';
+    document.getElementById('tally').textContent = '';
+    const pick = document.getElementById('pick');
+    if(pick) pick.addEventListener('change', e => {
+      const f = e.target.files[0]; if(!f) return;
+      const fr = new FileReader();
+      fr.onload = () => build(fr.result);
+      fr.readAsArrayBuffer(f);
+    });
+  }
+}
+
+function build(buf){
+  const wb = XLSX.read(buf, {type:'array'});
+  const sheet = wb.Sheets[SHEET] || wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, {defval:null});
+
+  RECORDS = rows.map((r, idx) => {
+    const title   = clean(r.Title);
+    const authors = splitAuthors(r.Authors);
+    const venue   = clean(r.Journal);
+    const abstract= clean(r.Abstract);
+    const yearRaw = r.Year;
+    const yr      = yearRaw === null || yearRaw === '' ? null : parseInt(String(yearRaw).replace(/[^\d]/g,''),10);
+    const typeRaw = (r.Type || '').toString().trim().toLowerCase();
+    const type    = TYPE_LABELS[typeRaw] || (typeRaw ? typeRaw.replace(/-/g,' ').replace(/^./,c=>c.toUpperCase()) : 'Other');
+    const doi     = clean(r.DOI);
+    const url     = clean(r.URL) || doi;
+    const people  = authors.map(a => ({name:a, id:authorKey(a)})).filter(a => a.id);
+    return {
+      id: idx, title, authors, people, venue, abstract,
+      year: Number.isFinite(yr) ? yr : null,
+      type: yr ? type : (typeRaw ? type : 'Other'),
+      complete: Boolean(yr),
+      doi, url,
+      topics: topicsFor([title, abstract, venue].join(' \n ')),
+      hay: [title, authors.join(' '), venue, abstract].join(' \n ').toLowerCase()
+    };
+  }).filter(r => r.title);
+
+  /* author display names: keep the fullest form seen for each key */
+  const variants = {};
+  RECORDS.forEach(r => r.people.forEach(p => {
+    variants[p.id.key] = variants[p.id.key] || {};
+    variants[p.id.key][p.name] = (variants[p.id.key][p.name] || 0) + 1;
+  }));
+  const disp = {};
+  for(const k in variants){
+    disp[k] = Object.entries(variants[k])
+      .sort((a,b) => b[1]-a[1] || b[0].length-a[0].length)[0][0];
+  }
+  AUTHOR_DISPLAY = disp;
+
+  renderFilters();
+  render();
+  wire();
+}
+
+let AUTHOR_DISPLAY = {};
+
+/* ---------------- filtering ---------------- */
+function tokens(q){
+  return q.toLowerCase().split(/\s+/).map(t=>t.trim()).filter(Boolean);
+}
+
+function matches(r, skip){
+  if(!state.showUndated && !r.complete && skip !== 'undated') return false;
+  if(skip !== 'q' && state.q){
+    for(const t of tokens(state.q)) if(!r.hay.includes(t)) return false;
+  }
+  if(skip !== 'year' && state.years.size && !state.years.has(r.year)) return false;
+  if(skip !== 'type' && state.types.size && !state.types.has(r.type)) return false;
+  if(skip !== 'topic' && state.topics.size){
+    for(const t of state.topics) if(!r.topics.includes(t)) return false;
+  }
+  if(skip !== 'author' && state.authors.size){
+    const keys = new Set(r.people.map(p => p.id.key));
+    for(const a of state.authors) if(!keys.has(a)) return false;
+  }
+  return true;
+}
+
+const selected = skip => RECORDS.filter(r => matches(r, skip));
+
+function counts(skip, fn){
+  const m = new Map();
+  selected(skip).forEach(r => fn(r).forEach(v => m.set(v, (m.get(v)||0)+1)));
+  return m;
+}
+
+/* ---------------- filter panel ---------------- */
+function renderFilters(){
+  const el = document.getElementById('filters');
+  const yearC   = counts('year',   r => r.year ? [r.year] : []);
+  const typeC   = counts('type',   r => [r.type]);
+  const topicC  = counts('topic',  r => r.topics);
+  const authorC = counts('author', r => r.people.map(p => p.id.key));
+
+  const years = [...new Set(RECORDS.map(r=>r.year).filter(Boolean))].sort((a,b)=>b-a);
+  const types = TYPE_ORDER.filter(t => [...typeC.keys()].includes(t) || RECORDS.some(r=>r.type===t));
+
+  let html = '';
+
+  const active = state.years.size + state.types.size + state.topics.size + state.authors.size + (state.q?1:0);
+  if(active) html += '<div class="facet"><button class="reset" id="reset">Clear all filters</button></div>';
+
+  html += '<div class="facet"><h2>Year</h2><div class="chiprow">';
+  years.forEach(y => {
+    const n = yearC.get(y) || 0;
+    html += `<button class="chip" data-facet="year" data-val="${y}" aria-pressed="${state.years.has(y)}"${n?'':' disabled'}>${y}<span class="n">${n}</span></button>`;
+  });
+  html += '</div></div>';
+
+  html += '<div class="facet"><h2>Type</h2><div class="taglist">';
+  types.forEach(t => {
+    const n = typeC.get(t) || 0;
+    html += `<button class="row" data-facet="type" data-val="${esc(t)}" aria-pressed="${state.types.has(t)}"${n?'':' disabled'}><span class="box"></span>${esc(t)}<span class="n">${n}</span></button>`;
+  });
+  html += '</div></div>';
+
+  html += '<div class="facet"><h2>Topic</h2>';
+  for(const group in TOPICS){
+    const items = TOPICS[group].map(([label]) => [label, topicC.get(label)||0])
+      .filter(([label,n]) => n > 0 || state.topics.has(label))
+      .sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]));
+    if(!items.length) continue;
+    html += `<p class="subhead">${esc(group)}</p><div class="taglist">`;
+    items.forEach(([label,n]) => {
+      html += `<button class="row" data-facet="topic" data-val="${esc(label)}" aria-pressed="${state.topics.has(label)}"><span class="box"></span>${esc(label)}<span class="n">${n}</span></button>`;
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  const authorRows = [...authorC.entries()]
+    .map(([k,n]) => [k, AUTHOR_DISPLAY[k] || k, n])
+    .filter(([,name]) => !state.authorFind || name.toLowerCase().includes(state.authorFind.toLowerCase()))
+    .sort((a,b) => b[2]-a[2] || a[1].localeCompare(b[1]));
+  const limit = state.showAllAuthors ? authorRows.length : 12;
+  html += '<div class="facet"><h2>Author</h2>';
+  html += `<input class="authorfind" id="authorfind" type="search" placeholder="Find an author" value="${esc(state.authorFind)}" autocomplete="off">`;
+  html += '<div class="taglist">';
+  authorRows.slice(0, limit).forEach(([k,name,n]) => {
+    html += `<button class="row" data-facet="author" data-val="${esc(k)}" aria-pressed="${state.authors.has(k)}"><span class="box"></span>${esc(name)}<span class="n">${n}</span></button>`;
+  });
+  html += '</div>';
+  if(authorRows.length > 12){
+    html += `<button class="more" id="moreauthors">${state.showAllAuthors ? 'Show fewer' : 'Show all ' + authorRows.length + ' authors'}</button>`;
+  }
+  html += '</div>';
+
+  const undated = RECORDS.filter(r => !r.complete).length;
+  if(undated){
+    html += `<div class="facet"><h2>Incomplete entries</h2><div class="taglist">
+      <button class="row" data-facet="undated" aria-pressed="${state.showUndated}"><span class="box"></span>Include ${undated} without year or type<span class="n">${undated}</span></button>
+    </div></div>`;
+  }
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('[data-facet]').forEach(b => b.addEventListener('click', () => {
+    const f = b.dataset.facet, v = b.dataset.val;
+    if(f === 'undated'){ state.showUndated = !state.showUndated; }
+    else{
+      const set = f==='year' ? state.years : f==='type' ? state.types : f==='topic' ? state.topics : state.authors;
+      const val = f==='year' ? parseInt(v,10) : v;
+      set.has(val) ? set.delete(val) : set.add(val);
+    }
+    renderFilters(); render(); pushHash();
+  }));
+  const reset = document.getElementById('reset');
+  if(reset) reset.addEventListener('click', () => {
+    state.q=''; document.getElementById('q').value='';
+    state.years.clear(); state.types.clear(); state.topics.clear(); state.authors.clear();
+    renderFilters(); render(); pushHash(); syncClear();
+  });
+  const af = document.getElementById('authorfind');
+  if(af) af.addEventListener('input', e => {
+    state.authorFind = e.target.value;
+    const pos = e.target.selectionStart;
+    renderFilters();
+    const again = document.getElementById('authorfind');
+    if(again){ again.focus(); again.setSelectionRange(pos,pos); }
+  });
+  const more = document.getElementById('moreauthors');
+  if(more) more.addEventListener('click', () => { state.showAllAuthors = !state.showAllAuthors; renderFilters(); });
+}
+
+/* ---------------- results ---------------- */
+function highlight(text){
+  const ts = tokens(state.q).filter(t => t.length > 2);
+  let out = esc(text);
+  ts.forEach(t => {
+    const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi');
+    out = out.replace(re, '<mark>$1</mark>');
+  });
+  return out;
+}
+
+function reference(r){
+  const a = r.authors.length ? r.authors.join(', ') + ', ' : '';
+  const y = r.year ? r.year + ', ' : '';
+  const v = r.venue ? '. ' + r.venue : '';
+  const d = r.doi ? '. ' + r.doi : '';
+  return a + y + r.title + v + d + '.';
+}
+
+function pubHTML(r){
+  const title = r.url
+    ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${highlight(r.title)}</a>`
+    : highlight(r.title);
+  const authors = r.people.length
+    ? r.people.map(p => `<button data-author="${esc(p.id.key)}" title="Filter by this author">${highlight(p.name)}</button>`).join(', ')
+    : '<span style="color:var(--slate)">Authors not entered yet</span>';
+  const venue = [r.venue ? highlight(r.venue) : '', r.year || ''].filter(Boolean).join(', ');
+  const shown = r.topics.slice(0,5);
+  const tags = shown.map(t => `<button class="tag" data-topic="${esc(t)}">${esc(t)}</button>`).join('') +
+    (r.topics.length > 5 ? `<button class="tag" data-showtags="${r.id}">+${r.topics.length-5} more</button>` : '');
+  const kind = r.complete || r.type !== 'Other' ? `<span class="kind">${esc(r.type)}</span>` : '<span class="kind">Needs metadata</span>';
+  const tools = [];
+  if(r.abstract) tools.push(`<button data-abstract="${r.id}">Abstract</button>`);
+  if(r.doi) tools.push(`<a href="${esc(r.doi)}" target="_blank" rel="noopener">DOI</a>`);
+  tools.push(`<button data-cite="${r.id}">Copy reference</button>`);
+  return `<article class="pub" id="pub-${r.id}">
+    <h3>${title}</h3>
+    <p class="authors">${authors}</p>
+    ${venue ? `<p class="venue">${venue}</p>` : ''}
+    <div class="meta">${kind}${tags}</div>
+    <div class="pubtools">${tools.join('')}</div>
+    ${r.abstract ? `<p class="abstract" id="abs-${r.id}" hidden>${highlight(r.abstract)}</p>` : ''}
+  </article>`;
+}
+
+function render(){
+  const list = selected(null);
+  const el = document.getElementById('results');
+
+  const withAbs = list.filter(r => r.abstract).length;
+  document.getElementById('tally').innerHTML =
+    `<b>${list.length}</b> of ${RECORDS.length} entries` + (withAbs ? ` &middot; ${withAbs} with abstracts` : '');
+
+  if(!list.length){
+    el.innerHTML = '<div class="empty"><h2>Nothing matches those filters</h2>' +
+      '<p>Try a single keyword, or clear a filter in the panel. Titles, authors, venues, and abstract text are all searched, ' +
+      'though abstracts are only present for some entries so far.</p></div>';
+    return;
+  }
+
+  let html = '';
+  if(state.sort === 'title' || state.sort === 'venue'){
+    const key = state.sort === 'title' ? (r=>r.title) : (r=>r.venue || 'zzz');
+    [...list].sort((a,b) => key(a).localeCompare(key(b))).forEach(r => html += pubHTML(r));
+  }else{
+    const groups = new Map();
+    list.forEach(r => {
+      const k = r.year === null ? 'undated' : r.year;
+      if(!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(r);
+    });
+    const years = [...groups.keys()].filter(k => k !== 'undated')
+      .sort((a,b) => state.sort === 'year-asc' ? a-b : b-a);
+    if(groups.has('undated')) years.push('undated');
+    years.forEach(y => {
+      const items = groups.get(y).sort((a,b) => (a.venue||'\uffff').localeCompare(b.venue||'\uffff') || a.title.localeCompare(b.title));
+      html += `<div class="yearband"><h2>${y === 'undated' ? 'Year not entered' : y}</h2><span>${items.length} ${items.length===1?'entry':'entries'}</span></div>`;
+      items.forEach(r => html += pubHTML(r));
+    });
+  }
+  el.innerHTML = html;
+
+  el.querySelectorAll('[data-abstract]').forEach(b => b.addEventListener('click', () => {
+    const p = document.getElementById('abs-' + b.dataset.abstract);
+    p.hidden = !p.hidden;
+    b.textContent = p.hidden ? 'Abstract' : 'Hide abstract';
+  }));
+  el.querySelectorAll('[data-cite]').forEach(b => b.addEventListener('click', async () => {
+    const r = RECORDS.find(x => x.id === +b.dataset.cite);
+    try{ await navigator.clipboard.writeText(reference(r)); b.textContent = 'Copied'; }
+    catch{ b.textContent = 'Copy blocked'; }
+    setTimeout(() => b.textContent = 'Copy reference', 1600);
+  }));
+  el.querySelectorAll('[data-showtags]').forEach(b => b.addEventListener('click', () => {
+    const r = RECORDS.find(x => x.id === +b.dataset.showtags);
+    b.outerHTML = r.topics.slice(5).map(t => `<button class="tag" data-topic="${esc(t)}">${esc(t)}</button>`).join('');
+    document.querySelectorAll(`#pub-${r.id} [data-topic]`).forEach(t => t.addEventListener('click', () => {
+      state.topics.add(t.dataset.topic); renderFilters(); render(); pushHash(); window.scrollTo({top:0});
+    }));
+  }));
+  el.querySelectorAll('[data-topic]').forEach(b => b.addEventListener('click', () => {
+    state.topics.add(b.dataset.topic); renderFilters(); render(); pushHash(); window.scrollTo({top:0});
+  }));
+  el.querySelectorAll('[data-author]').forEach(b => b.addEventListener('click', () => {
+    state.authors.add(b.dataset.author); renderFilters(); render(); pushHash(); window.scrollTo({top:0});
+  }));
+}
+
+/* ---------------- search box, sort, shareable URL ---------------- */
+function syncClear(){
+  document.getElementById('clearq').style.display = state.q ? 'block' : 'none';
+}
+
+function pushHash(){
+  const p = new URLSearchParams();
+  if(state.q) p.set('q', state.q);
+  if(state.years.size) p.set('year', [...state.years].join(','));
+  if(state.types.size) p.set('type', [...state.types].join('|'));
+  if(state.topics.size) p.set('topic', [...state.topics].join('|'));
+  if(state.authors.size) p.set('author', [...state.authors].join('|'));
+  const s = p.toString();
+  history.replaceState(null, '', s ? '#' + s : location.pathname);
+}
+
+function readHash(){
+  const p = new URLSearchParams(location.hash.replace(/^#/,''));
+  state.q = p.get('q') || '';
+  (p.get('year')||'').split(',').filter(Boolean).forEach(v => state.years.add(parseInt(v,10)));
+  (p.get('type')||'').split('|').filter(Boolean).forEach(v => state.types.add(v));
+  (p.get('topic')||'').split('|').filter(Boolean).forEach(v => state.topics.add(v));
+  (p.get('author')||'').split('|').filter(Boolean).forEach(v => state.authors.add(v));
+  document.getElementById('q').value = state.q;
+  syncClear();
+}
+
+let timer;
+function wire(){
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      state.q = q.value.trim();
+      syncClear(); renderFilters(); render(); pushHash();
+    }, 140);
+  });
+  document.getElementById('clearq').addEventListener('click', () => {
+    q.value=''; state.q=''; syncClear(); renderFilters(); render(); pushHash(); q.focus();
+  });
+  document.getElementById('sort').addEventListener('change', e => {
+    state.sort = e.target.value; render();
+  });
+}
+
+readHash();
+load();
+</script>
+<script data-goatcounter="https://hbedle.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
