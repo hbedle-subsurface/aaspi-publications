@@ -232,6 +232,7 @@ footer .mark{
 }
 @media (max-width:560px){footer .mark{width:40px;height:40px}}
 footer p{margin:0 0 7px;max-width:80ch}
+#viewcount{font-family:var(--serif);font-style:italic;color:var(--crimson-dark);margin-bottom:10px}
 .loading{padding:50px 0;color:var(--slate)}
 @media (prefers-reduced-motion:no-preference){
   .pub{transition:background .12s ease}
@@ -285,6 +286,7 @@ footer p{margin:0 0 7px;max-width:80ch}
 <footer>
   <img class="mark" src="assets/aaspi-mark.png" alt="AASPI" onerror="this.remove()">
   <p><strong>Updating the list:</strong> replace <code>data/AASPI_pubs.xlsx</code> in this repository, keeping the file name and the <code>Complete</code> sheet. The page reads the spreadsheet directly, so a new upload changes the list with no other edits. Column names it expects: Title, Year, Type, Authors, Journal, DOI, URL, Abstract.</p>
+  <p id="viewcount" hidden></p>
   <p>Compiled by Heather Bedle, School of Geosciences, University of Oklahoma. This list is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; the publications themselves stay with their publishers.</p>
 </footer>
 
@@ -373,6 +375,13 @@ const state = {
   q:'', years:new Set(), types:new Set(), topics:new Set(), authors:new Set(),
   sort:'year-desc', showUndated:false, showAllAuthors:false, authorFind:''
 };
+
+/* ---------------- usage counting (count.js, no-op without it) ---------------- */
+function track(kind, value){
+  if(typeof window.aaspiCount === 'function'){
+    window.aaspiCount(kind + '/' + value, 'AASPI publications: ' + kind);
+  }
+}
 
 /* ---------------- helpers ---------------- */
 const decode = s => !s ? '' : String(s)
@@ -606,7 +615,8 @@ function renderFilters(){
     else{
       const set = f==='year' ? state.years : f==='type' ? state.types : f==='topic' ? state.topics : state.authors;
       const val = f==='year' ? parseInt(v,10) : v;
-      set.has(val) ? set.delete(val) : set.add(val);
+      if(set.has(val)) set.delete(val);
+      else{ set.add(val); track(f, f==='author' ? (AUTHOR_DISPLAY[v] || v) : val); }
     }
     renderFilters(); render(); pushHash();
   }));
@@ -656,7 +666,8 @@ function renderHist(){
 
   el.querySelectorAll('[data-facet="year"]').forEach(b => b.addEventListener('click', () => {
     const y = parseInt(b.dataset.val, 10);
-    state.years.has(y) ? state.years.delete(y) : state.years.add(y);
+    if(state.years.has(y)) state.years.delete(y);
+    else { state.years.add(y); track('year', y); }
     renderFilters(); render(); pushHash();
   }));
 }
@@ -749,12 +760,13 @@ function render(){
 
   el.querySelectorAll('[data-abstract]').forEach(b => b.addEventListener('click', () => {
     const p = document.getElementById('abs-' + b.dataset.abstract);
+    if(p.hidden) track('action', 'abstract-opened');
     p.hidden = !p.hidden;
     b.textContent = p.hidden ? 'Abstract' : 'Hide abstract';
   }));
   el.querySelectorAll('[data-cite]').forEach(b => b.addEventListener('click', async () => {
     const r = RECORDS.find(x => x.id === +b.dataset.cite);
-    try{ await navigator.clipboard.writeText(reference(r)); b.textContent = 'Copied'; }
+    try{ await navigator.clipboard.writeText(reference(r)); b.textContent = 'Copied'; track('action','reference-copied'); }
     catch{ b.textContent = 'Copy blocked'; }
     setTimeout(() => b.textContent = 'Copy reference', 1600);
   }));
@@ -762,14 +774,18 @@ function render(){
     const r = RECORDS.find(x => x.id === +b.dataset.showtags);
     b.outerHTML = r.topics.slice(5).map(t => `<button class="tag" data-topic="${esc(t)}">${esc(t)}</button>`).join('');
     document.querySelectorAll(`#pub-${r.id} [data-topic]`).forEach(t => t.addEventListener('click', () => {
-      state.topics.add(t.dataset.topic); renderFilters(); render(); pushHash(); window.scrollTo({top:0});
+      state.topics.add(t.dataset.topic); track('topic', t.dataset.topic);
+      renderFilters(); render(); pushHash(); window.scrollTo({top:0});
     }));
   }));
   el.querySelectorAll('[data-topic]').forEach(b => b.addEventListener('click', () => {
-    state.topics.add(b.dataset.topic); renderFilters(); render(); pushHash(); window.scrollTo({top:0});
+    state.topics.add(b.dataset.topic); track('topic', b.dataset.topic);
+    renderFilters(); render(); pushHash(); window.scrollTo({top:0});
   }));
   el.querySelectorAll('[data-author]').forEach(b => b.addEventListener('click', () => {
-    state.authors.add(b.dataset.author); renderFilters(); render(); pushHash(); window.scrollTo({top:0});
+    state.authors.add(b.dataset.author);
+    track('author', AUTHOR_DISPLAY[b.dataset.author] || b.dataset.author);
+    renderFilters(); render(); pushHash(); window.scrollTo({top:0});
   }));
 }
 
@@ -800,7 +816,7 @@ function readHash(){
   syncClear();
 }
 
-let timer;
+let timer, searchTimer;
 function wire(){
   const q = document.getElementById('q');
   q.addEventListener('input', () => {
@@ -809,6 +825,12 @@ function wire(){
       state.q = q.value.trim();
       syncClear(); renderFilters(); render(); pushHash();
     }, 140);
+    /* only the term someone stops typing on gets counted, not every keystroke */
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const term = q.value.trim().toLowerCase();
+      if(term.length >= 3) track('search', term);
+    }, 2500);
   });
   document.getElementById('clearq').addEventListener('click', () => {
     q.value=''; state.q=''; syncClear(); renderFilters(); render(); pushHash(); q.focus();
@@ -821,6 +843,6 @@ function wire(){
 readHash();
 load();
 </script>
-<script data-goatcounter="https://hbedle.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script src="count.js" defer></script>
 </body>
 </html>

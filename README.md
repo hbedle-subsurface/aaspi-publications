@@ -81,6 +81,33 @@ top of the script in `index.html`, one line per tag:
 
 Adding, renaming, or retiring a tag means editing that line, and the sidebar counts follow.
 
+## Page counts and what people look for
+
+`count.js` reports to the shared GoatCounter account at `hbedle.goatcounter.com`, the same
+one the teaching sites use. GoatCounter records `location.pathname`, so views of this site
+arrive under `/aaspi-publications/` and stay separable from the other repos.
+
+It counts three things:
+
+- **page views**, the ordinary GoatCounter hit on load
+- **filter and search use**, sent as GoatCounter events under names like
+  `aaspi-publications/topic/Geothermal`, `aaspi-publications/year/2024`,
+  `aaspi-publications/author/Heather Bedle`, and `aaspi-publications/search/gas hydrates`.
+  Opening an abstract and copying a reference come through as
+  `aaspi-publications/action/...`. Each name is sent at most once per visit, so the Events
+  list on the dashboard reads as *how many people used this topic*, not how many times
+  somebody clicked around.
+- **the view count itself**, read back from GoatCounter and printed as a line in the page
+  footer. This one needs *Allow adding visitor counts on your website* switched on in the
+  GoatCounter site settings; until it is, the request comes back empty and the footer line
+  stays hidden rather than showing an error.
+
+Three flags at the top of `count.js` turn the pieces off independently: `TRACK_FILTERS`,
+`TRACK_SEARCHES`, and `SHOW_COUNT`. Search terms are free text that visitors typed, which is
+worth knowing before leaving `TRACK_SEARCHES` on; nothing else recorded is tied to a person,
+and GoatCounter itself sets no cookies. Counting is skipped on `file://`, on localhost, and
+in `preview.html`.
+
 ## Previewing without a server
 
 `preview.html` is a standalone copy with the images and the spreadsheet embedded in the file,
