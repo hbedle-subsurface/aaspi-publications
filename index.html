@@ -383,6 +383,27 @@ function track(kind, value){
   }
 }
 
+/* Search terms are only counted when they land on something already in this
+   page's own vocabulary: a topic tag (matched with the same patterns used for
+   tagging entries, so "taranaki" counts as New Zealand and "som" as
+   self-organizing maps) or the surname of an author in the bibliography.
+   Anything else is counted as "other", which keeps the volume of searching
+   visible without collecting a list of what people typed. */
+function searchVocabHits(term){
+  const hits = topicsFor(term);
+  if(hits.length) return hits.slice(0,2);
+  const t = term.replace(/[^a-z\- ]/g,' ').replace(/\s+/g,' ').trim();
+  const words = t.split(' ');
+  let loose = null;
+  for(const k in AUTHOR_DISPLAY){
+    const surname = k.split('|')[0];
+    if(surname.length < 4) continue;
+    if(words.includes(surname) || t === surname) return [AUTHOR_DISPLAY[k]];
+    if(!loose && t.includes(surname)) loose = AUTHOR_DISPLAY[k];
+  }
+  return loose ? [loose] : [];
+}
+
 /* ---------------- helpers ---------------- */
 const decode = s => !s ? '' : String(s)
   .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
@@ -829,7 +850,10 @@ function wire(){
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       const term = q.value.trim().toLowerCase();
-      if(term.length >= 3) track('search', term);
+      if(term.length < 3) return;
+      const hits = searchVocabHits(term);
+      if(hits.length) hits.forEach(h => track('search', h));
+      else track('search', 'other');
     }, 2500);
   });
   document.getElementById('clearq').addEventListener('click', () => {

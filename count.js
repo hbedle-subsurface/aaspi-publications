@@ -14,7 +14,7 @@
   var LABEL    = 'aaspi-publications';   // prefix on event names
 
   var TRACK_FILTERS  = true;   // topic, year, type, author clicks
-  var TRACK_SEARCHES = true;   // the words typed into the search box
+  var TRACK_SEARCHES = true;   // searches, mapped to topic tags and author names
   var SHOW_COUNT     = true;   // print the view count in the footer
 
   var host = location.hostname;
