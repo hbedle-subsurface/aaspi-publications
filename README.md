@@ -81,6 +81,13 @@ top of the script in `index.html`, one line per tag:
 
 Adding, renaming, or retiring a tag means editing that line, and the sidebar counts follow.
 
+## Previewing without a server
+
+`preview.html` is a standalone copy with the images and the spreadsheet embedded in the file,
+for opening straight off a disk or emailing to someone. It is a snapshot: it does not follow
+changes to `data/AASPI_pubs.xlsx`, so regenerate it (or just use the live site) after an
+update. `index.html` is what Pages serves.
+
 ## Credit and license
 
 Compiled by Heather Bedle, School of Geosciences, University of Oklahoma.

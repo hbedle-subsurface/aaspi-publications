@@ -242,7 +242,7 @@ footer p{margin:0 0 7px;max-width:80ch}
 
 <header class="masthead">
   <div class="masthead-inner">
-    <img class="lockup" src="assets/aaspi-header.png"
+    <img class="lockup" src="assets/aaspi-header.png" onerror="this.remove()"
          alt="Mewbourne College of Earth and Energy &mdash; Attribute-Assisted Seismic Processing &amp; Interpretation, The University of Oklahoma">
     <div class="hero">
       <div class="hero-main">
@@ -258,7 +258,7 @@ footer p{margin:0 0 7px;max-width:80ch}
         </div>
       </div>
       <figure class="group">
-        <img src="assets/aaspi-group.jpg" alt="Members of the AASPI group outside the Sarkeys Energy Center">
+        <img src="assets/aaspi-group.jpg" onerror="this.closest('figure').remove()" alt="Members of the AASPI group outside the Sarkeys Energy Center">
         <figcaption>The AASPI group,<br>Norman, Oklahoma</figcaption>
       </figure>
     </div>
@@ -283,7 +283,7 @@ footer p{margin:0 0 7px;max-width:80ch}
 </div>
 
 <footer>
-  <img class="mark" src="assets/aaspi-mark.png" alt="AASPI">
+  <img class="mark" src="assets/aaspi-mark.png" alt="AASPI" onerror="this.remove()">
   <p><strong>Updating the list:</strong> replace <code>data/AASPI_pubs.xlsx</code> in this repository, keeping the file name and the <code>Complete</code> sheet. The page reads the spreadsheet directly, so a new upload changes the list with no other edits. Column names it expects: Title, Year, Type, Authors, Journal, DOI, URL, Abstract.</p>
   <p>Compiled by Heather Bedle, School of Geosciences, University of Oklahoma. This list is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; the publications themselves stay with their publishers.</p>
 </footer>
@@ -419,13 +419,21 @@ function topicsFor(text){
 }
 
 /* ---------------- load ---------------- */
+function b64ToBytes(b64){
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
 async function load(){
+  if(window.EMBEDDED_XLSX){ build(b64ToBytes(window.EMBEDDED_XLSX)); return; }
   let err = null;
   for(const file of DATA_FILES){
     try{
       const res = await fetch(file, {cache:'no-store'});
       if(!res.ok) throw new Error('HTTP ' + res.status);
-      build(await res.arrayBuffer());
+      build(new Uint8Array(await res.arrayBuffer()));
       return;
     }catch(e){ err = e; }
   }
@@ -441,7 +449,7 @@ async function load(){
     if(pick) pick.addEventListener('change', e => {
       const f = e.target.files[0]; if(!f) return;
       const fr = new FileReader();
-      fr.onload = () => build(fr.result);
+      fr.onload = () => build(new Uint8Array(fr.result));
       fr.readAsArrayBuffer(f);
     });
   }
