@@ -89,41 +89,9 @@ arrive under `/aaspi-publications/` and stay separable from the other repos.
 
 It counts three things:
 
-- **page views**, the ordinary GoatCounter hit on load
-- **filter and search use**, sent as GoatCounter events under names like
-  `aaspi-publications/topic/Geothermal`, `aaspi-publications/year/2024`, and
-  `aaspi-publications/author/Heather Bedle`. Opening an abstract and copying a reference
-  come through as `aaspi-publications/action/...`. Each name is sent at most once per visit,
-  so the Events list on the dashboard reads as *how many people used this topic*, not how
-  many times somebody clicked around.
-
-  Typed searches are counted against the same vocabulary rather than recorded verbatim. A
-  term is run through the topic patterns and the list of author surnames, so `taranaki`
-  arrives as `search/New Zealand`, `som` as `search/Self-organizing maps`, and `lubo-robles`
-  as `search/David Lubo-Robles`. Anything that matches nothing arrives as `search/other`,
-  which keeps the amount of searching visible without building a list of what people typed.
-  Terms are only counted once someone stops typing for two and a half seconds, so partial
-  words never register.
-- **the view count itself**, read back from GoatCounter and printed as a line in the page
-  footer. This one needs *Allow adding visitor counts on your website* switched on in the
-  GoatCounter site settings; until it is, the request comes back empty and the footer line
-  stays hidden rather than showing an error.
-
-Three flags at the top of `count.js` turn the pieces off independently: `TRACK_FILTERS`,
-`TRACK_SEARCHES`, and `SHOW_COUNT`. Every event name is one of the labels defined in this
-repo, so the Events list stays about the length of the tag list; GoatCounter sets no cookies
-and keeps no IP addresses. Counting is skipped on `file://`, on localhost, and in
-`preview.html`.
-
-The matcher lives in `searchVocabHits()` in `index.html`, next to the `TOPICS` dictionary it
-draws on, so a new tag widens what searches can be recognized without any other change.
-
-## Previewing without a server
-
-`preview.html` is a standalone copy with the images and the spreadsheet embedded in the file,
-for opening straight off a disk or emailing to someone. It is a snapshot: it does not follow
-changes to `data/AASPI_pubs.xlsx`, so regenerate it (or just use the live site) after an
-update. `index.html` is what Pages serves.
+- **page views**, 
+- **filter and search use**,
+- **the view count itself**
 
 ## Credit and license
 
