@@ -1,98 +1,88 @@
-# AASPI publications — searchable list
+# AASPI publications
 
-A single-page site that reads the AASPI publications spreadsheet in the browser and lets
-people search and filter it. Grouped by year, newest first, with filters for type, topic,
-and author, and a free-text search across titles, authors, venues, and abstracts.
+**[hbedle-subsurface.github.io/aaspi-publications](https://hbedle-subsurface.github.io/aaspi-publications/)**
 
-Files:
+Everything the AASPI consortium has published, in one searchable list: journal papers,
+expanded abstracts, magazine columns, preprints, and book chapters. Built for the question
+that usually comes up in the middle of a project — has anyone in the group already worked on
+this attribute, in this basin?
+
+## Finding things
+
+**Search** covers titles, authors, venues, and abstract text at once. Several words narrow
+rather than widen, so `taranaki channel` returns only entries containing both. Matches are
+highlighted in the results, including inside abstracts.
+
+**The year chart** at the top is the year filter. Clicking a bar restricts the list to that
+year, clicking again releases it, and several years can be on at once. The pale part of each
+bar is the full count for that year and the solid part is how much of it survives the filters
+currently set, so the chart shows where a topic sits in time: a search for `machine learning`
+leaves almost nothing before 2014 and fills the bars after it.
+
+**Type** separates peer-reviewed papers from expanded abstracts, conference abstracts,
+magazine columns, and preprints. Peer-reviewed entries carry a crimson label in the list.
+
+**Topic** tags each entry from its title, venue, and abstract, in three groups:
+
+- attributes and methods — coherence, curvature, spectral decomposition, SOM, GTM, PCA and
+  ICA, GLCM texture, distance-quadrant, inversion, AVO and anisotropy, and others
+- geology and setting — deepwater channels and MTDs, carbonates and reefs, shales, salt and
+  volcanics, gas hydrates, CO2 storage, geothermal, induced seismicity, offshore wind
+- region — New Zealand, Gulf of Mexico, Brazil, Australia, Oklahoma and the midcontinent,
+  the Permian, Alaska, China, the North Sea
+
+Tags combine, so *Deepwater channels* plus *New Zealand* plus *Machine learning* gives the
+Taranaki facies work and little else. Every tag printed under an entry is clickable, which
+is a quick way to find the neighbors of a paper already in front of you.
+
+**Author** lists everyone in the bibliography, most prolific first, with a find box for the
+long tail. `H. Bedle` and `Heather Bedle` count as one person, since names are matched on
+surname plus first initial. Author names inside an entry are clickable too.
+
+Each entry gives the title as a link to the DOI or publisher page, an expandable abstract
+where one is on file, and **Copy reference** for pasting a formatted citation into a proposal
+or an annual report.
+
+## Sharing a view
+
+Filters are written into the address bar, so any search or set of filters is a link:
 
 ```
-index.html                 the whole site (HTML, CSS, JS in one file)
-data/AASPI_pubs.xlsx       the publication list
+.../#q=hydrates
+.../#topic=Geothermal
+.../#year=2025,2026&type=Journal%20article
+.../#author=lubo-robles|D
 ```
 
-## Publishing it
+Useful for sponsor email, a reading list for a new student, or the annual review deck.
 
-1. Create a repository (for example `aaspi-publications`) and put these files at its root.
-2. Settings → Pages → Build and deployment → Source: *Deploy from a branch*, branch `main`, folder `/ (root)`.
-3. The page appears at `https://<user>.github.io/<repo>/`.
+## What is and is not in the list
 
-No build step and no dependencies to install. The page loads SheetJS from a CDN at
-run time to read the spreadsheet.
+425 entries. 383 have full metadata; 42 still hold only a title and sit in a group at the
+bottom, hidden until the *Include 42 without year or type* box in the sidebar is checked.
+Abstracts are on file for 259 entries, and those are what search and tagging work best on:
+where an abstract is missing, tagging falls back to the title alone, so an older expanded
+abstract can carry fewer tags than it deserves.
 
-## Updating the list
+## Keeping it up to date
 
-Replace `data/AASPI_pubs.xlsx` with a new export. Keep the file name and keep the sheet
-named `Complete`; nothing else needs editing. The page also accepts the old name
-`data/AASPI_pubs_working_list.xlsx` if that one is present instead.
+Replace `data/AASPI_pubs.xlsx` with a new export, keeping the file name and the sheet named
+`Complete`. Nothing else needs editing — the page reads the spreadsheet in the browser, so
+the new list is live as soon as Pages rebuilds. Columns used are Title, Year, Type, Authors,
+Journal, DOI, URL, and Abstract; everything else in the sheet is ignored, so the working file
+can stay as it is.
 
-Columns read from the sheet:
-
-| Column | Used for |
-|---|---|
-| Title | entry title, search, topic tagging |
-| Year | year grouping and the year filter |
-| Type | type filter (Crossref-style strings are relabeled, e.g. `proceedings-article` → Expanded abstract) |
-| Authors | author filter, search |
-| Journal | venue line, search, topic tagging |
-| DOI | DOI link and the copied reference |
-| URL | what the title links to (falls back to DOI) |
-| Abstract | expandable abstract, search, topic tagging |
-
-Other columns in the sheet (Match Status, Match Score, Candidate *, and so on) are ignored,
-so the working file can stay as it is.
-
-Entries with no year sit in a group at the bottom and are hidden until the
-"Include N without year or type" box in the sidebar is checked. There are 42 of those at the
-moment, so that toggle doubles as a worklist of what still needs metadata.
-
-## Topic tags
-
-Tags are not stored in the spreadsheet. They are matched in the browser from title, venue,
-and abstract text using the `TOPICS` dictionary near the top of the script in `index.html`,
-in three groups: attributes and methods, geology and setting, and region. Each entry is a
-label and a regular expression:
+Topic tags are not stored in the spreadsheet. They come from the `TOPICS` dictionary near the
+top of the script in `index.html`, one line per tag:
 
 ```js
 ['Gas hydrates', /hydrate|\bBSR\b/i],
 ```
 
-Adding, renaming, or retiring a tag means editing that one line. Counts in the sidebar
-update on their own. Where abstracts are missing, tagging works off the title alone, so
-coverage will improve as abstracts get filled in.
+Adding, renaming, or retiring a tag means editing that line, and the sidebar counts follow.
 
-Author names are matched on surname plus first initial, which merges `H. Bedle` with
-`Heather Bedle`. The fullest-spelled variant that appears most often is what shows in the
-sidebar.
+## Credit and license
 
-## Sharing a filtered view
-
-Filters are written into the URL, so a link like
-
-```
-.../#q=hydrates&topic=New%20Zealand
-```
-
-reopens that search. Useful for pointing sponsors or students at a slice of the list.
-
-## Local preview
-
-Browsers block reading the spreadsheet from a `file://` page, so serve the folder:
-
-```bash
-python -m http.server 8000
-```
-
-then open `http://localhost:8000`. If the file is opened directly anyway, the page offers a
-file picker as a fallback.
-
-## Counting
-
-`index.html` ends with the GoatCounter snippet pointing at `hbedle.goatcounter.com`. Swap it
-for the shared `count.js` include if this repo should follow the same pattern as the teaching
-repos.
-
-## License
-
-Text and code here: CC BY-SA 4.0. The publications themselves belong to their publishers;
-this is a finding aid pointing at them.
+Compiled by Heather Bedle, School of Geosciences, University of Oklahoma.
+CC BY-SA 4.0 for this compilation and the code here; the publications themselves belong to
+their publishers.

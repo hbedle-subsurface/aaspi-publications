@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AASPI publications</title>
 <meta name="description" content="Searchable list of AASPI publications by year, type, topic, and author.">
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/aaspi-mark.png">
+<meta name="theme-color" content="#841617">
 <style>
 :root{
   --crimson:#841617;
@@ -44,7 +47,7 @@ h1{
   margin:8px 0 0;max-width:62ch;font-size:17px;
 }
 .searchbar{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.searchfield{position:relative;flex:1 1 420px;min-width:0}
+.searchfield{position:relative;flex:1 1 420px;max-width:560px;min-width:0}
 #q{
   width:100%;font:inherit;font-size:17px;padding:12px 40px 12px 14px;
   border:1px solid var(--rule);border-radius:2px;background:var(--wash);color:var(--ink);
@@ -57,6 +60,51 @@ h1{
 }
 .tally{color:var(--slate);font-size:14.5px}
 .tally b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+.lockup{display:block;width:100%;max-width:640px;height:auto;margin:2px 0 20px}
+.hero{display:flex;gap:30px;align-items:flex-start}
+.hero-main{flex:1 1 520px;min-width:0}
+.group{flex:0 0 170px;margin:0}
+.group img{
+  width:170px;height:170px;border-radius:50%;display:block;object-fit:cover;
+  box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--crimson);
+}
+.group figcaption{
+  font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--slate);
+  text-align:center;margin-top:12px;
+}
+@media (max-width:780px){
+  .hero{gap:18px}
+  .group{flex-basis:86px}
+  .group img{width:86px;height:86px;box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--crimson)}
+  .group figcaption{display:none}
+}
+
+/* ---------- year histogram, doubles as the year filter ---------- */
+.hist{margin-top:26px;border-top:1px solid var(--rule);padding-top:11px}
+.hist-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  font-size:12.5px;color:var(--slate);margin-bottom:9px}
+.hist-head b{color:var(--crimson);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px}
+.bars{display:flex;align-items:flex-end;gap:4px}
+.bar{
+  flex:1 1 0;min-width:0;background:none;border:0;padding:0;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+.barbody{height:86px;display:flex;align-items:flex-end;width:100%;
+  border-bottom:1px solid var(--rule)}
+.ghost{width:100%;background:rgba(132,22,23,.13);position:relative;min-height:1px}
+.fill{position:absolute;left:0;bottom:0;width:100%;background:var(--crimson)}
+.bar:hover .ghost{background:rgba(132,22,23,.26)}
+.bar .lab{font-size:11px;color:var(--slate);font-variant-numeric:tabular-nums;
+  padding:4px 0 0;letter-spacing:.02em}
+.bar[aria-pressed="true"] .fill{background:var(--crimson-dark)}
+.bar[aria-pressed="true"] .lab{color:var(--crimson-dark);font-weight:700}
+.y2{display:none}
+@media (max-width:620px){
+  .barbody{height:60px}
+  .y4{display:none}.y2{display:inline}
+  .bars{gap:2px}
+}
 
 /* ---------- layout ---------- */
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px;display:grid;gap:34px;
@@ -148,10 +196,11 @@ h1{
 .venue{font-family:var(--serif);font-style:italic;color:var(--slate);font-size:14.5px;margin:0}
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
 .kind{
-  font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--crimson-dark);
-  border:1px solid rgba(132,22,23,.35);background:rgba(132,22,23,.05);
+  font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+  border:1px solid var(--rule);background:var(--wash);
   padding:2px 7px;border-radius:2px;
 }
+.kind.reviewed{color:var(--crimson-dark);border-color:rgba(132,22,23,.35);background:rgba(132,22,23,.06)}
 .tag{
   font-size:12.5px;color:var(--slate);background:var(--wash);border:1px solid var(--rule);
   padding:2px 7px;border-radius:2px;cursor:pointer;font-family:inherit;
@@ -176,8 +225,12 @@ mark{background:#F7E6A8;color:inherit;padding:0 1px}
 }
 footer{
   max-width:1180px;margin:0 auto;padding:22px 20px 60px;border-top:1px solid var(--rule);
-  color:var(--slate);font-size:14px;
+  color:var(--slate);font-size:14px;position:relative;
 }
+footer .mark{
+  float:right;width:54px;height:54px;margin:0 0 10px 18px;border-radius:3px;
+}
+@media (max-width:560px){footer .mark{width:40px;height:40px}}
 footer p{margin:0 0 7px;max-width:80ch}
 .loading{padding:50px 0;color:var(--slate)}
 @media (prefers-reduced-motion:no-preference){
@@ -189,17 +242,27 @@ footer p{margin:0 0 7px;max-width:80ch}
 
 <header class="masthead">
   <div class="masthead-inner">
-    <p class="eyebrow">Attribute-Assisted Seismic Processing &amp; Interpretation</p>
-    <h1>AASPI publications</h1>
-    <p class="standfirst">Papers, expanded abstracts, and columns from the AASPI consortium at the University of Oklahoma. Search by title, author, venue, or abstract text, or narrow the list with the filters.</p>
-    <div class="searchbar">
-      <div class="searchfield">
-        <label for="q" class="sr-only" style="position:absolute;left:-9999px">Search publications</label>
-        <input id="q" type="search" placeholder="coherence, Taranaki, Lubo-Robles, gas hydrates&hellip;" autocomplete="off">
-        <button class="clearq" id="clearq" title="Clear search" aria-label="Clear search">&times;</button>
+    <img class="lockup" src="assets/aaspi-header.png"
+         alt="Mewbourne College of Earth and Energy &mdash; Attribute-Assisted Seismic Processing &amp; Interpretation, The University of Oklahoma">
+    <div class="hero">
+      <div class="hero-main">
+        <h1>Publications</h1>
+        <p class="standfirst">Everything the consortium has published: journal papers, expanded abstracts, magazine columns, and preprints. Search a title, an author, a basin, or an attribute.</p>
+        <div class="searchbar">
+          <div class="searchfield">
+            <label for="q" style="position:absolute;left:-9999px">Search publications</label>
+            <input id="q" type="search" placeholder="coherence, Taranaki, Lubo-Robles, gas hydrates&hellip;" autocomplete="off">
+            <button class="clearq" id="clearq" title="Clear search" aria-label="Clear search">&times;</button>
+          </div>
+          <p class="tally" id="tally">Loading&hellip;</p>
+        </div>
       </div>
-      <p class="tally" id="tally">Loading&hellip;</p>
+      <figure class="group">
+        <img src="assets/aaspi-group.jpg" alt="Members of the AASPI group outside the Sarkeys Energy Center">
+        <figcaption>The AASPI group,<br>Norman, Oklahoma</figcaption>
+      </figure>
     </div>
+    <div class="hist" id="hist" hidden></div>
   </div>
 </header>
 
@@ -220,6 +283,7 @@ footer p{margin:0 0 7px;max-width:80ch}
 </div>
 
 <footer>
+  <img class="mark" src="assets/aaspi-mark.png" alt="AASPI">
   <p><strong>Updating the list:</strong> replace <code>data/AASPI_pubs.xlsx</code> in this repository, keeping the file name and the <code>Complete</code> sheet. The page reads the spreadsheet directly, so a new upload changes the list with no other edits. Column names it expects: Title, Year, Type, Authors, Journal, DOI, URL, Abstract.</p>
   <p>Compiled by Heather Bedle, School of Geosciences, University of Oklahoma. This list is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; the publications themselves stay with their publishers.</p>
 </footer>
@@ -368,9 +432,9 @@ async function load(){
   {
     document.getElementById('results').innerHTML =
       '<div class="empty"><h2>The spreadsheet did not load</h2>' +
-      '<p>The page looks for <code>' + DATA_FILES[0] + '</code> in this repository (' + esc(err ? err.message : 'not found') + '). ' +
-      'Opening index.html straight off a local disk also blocks the read &mdash; either serve the folder ' +
-      '(<code>python -m http.server</code>) or pick the file here:</p>' +
+      '<p>The list lives in <code>' + DATA_FILES[0] + '</code> and the page could not read it (' + esc(err ? err.message : 'not found') + '). ' +
+      'Opening index.html straight from a folder on your own machine blocks the read, which is the usual cause. ' +
+      'Pick the spreadsheet here to carry on:</p>' +
       '<p><input type="file" id="pick" accept=".xlsx"></p></div>';
     document.getElementById('tally').textContent = '';
     const pick = document.getElementById('pick');
@@ -424,12 +488,18 @@ function build(buf){
   }
   AUTHOR_DISPLAY = disp;
 
+  YEAR_TOTALS = new Map();
+  RECORDS.forEach(r => { if(r.year) YEAR_TOTALS.set(r.year, (YEAR_TOTALS.get(r.year)||0)+1); });
+  YEARS = [...YEAR_TOTALS.keys()].sort((a,b) => a-b);
+  YEAR_MAX = Math.max(...YEAR_TOTALS.values());
+
   renderFilters();
   render();
   wire();
 }
 
 let AUTHOR_DISPLAY = {};
+let YEAR_TOTALS = new Map(), YEARS = [], YEAR_MAX = 1;
 
 /* ---------------- filtering ---------------- */
 function tokens(q){
@@ -464,25 +534,16 @@ function counts(skip, fn){
 /* ---------------- filter panel ---------------- */
 function renderFilters(){
   const el = document.getElementById('filters');
-  const yearC   = counts('year',   r => r.year ? [r.year] : []);
   const typeC   = counts('type',   r => [r.type]);
   const topicC  = counts('topic',  r => r.topics);
   const authorC = counts('author', r => r.people.map(p => p.id.key));
 
-  const years = [...new Set(RECORDS.map(r=>r.year).filter(Boolean))].sort((a,b)=>b-a);
   const types = TYPE_ORDER.filter(t => [...typeC.keys()].includes(t) || RECORDS.some(r=>r.type===t));
 
   let html = '';
 
   const active = state.years.size + state.types.size + state.topics.size + state.authors.size + (state.q?1:0);
   if(active) html += '<div class="facet"><button class="reset" id="reset">Clear all filters</button></div>';
-
-  html += '<div class="facet"><h2>Year</h2><div class="chiprow">';
-  years.forEach(y => {
-    const n = yearC.get(y) || 0;
-    html += `<button class="chip" data-facet="year" data-val="${y}" aria-pressed="${state.years.has(y)}"${n?'':' disabled'}>${y}<span class="n">${n}</span></button>`;
-  });
-  html += '</div></div>';
 
   html += '<div class="facet"><h2>Type</h2><div class="taglist">';
   types.forEach(t => {
@@ -559,6 +620,39 @@ function renderFilters(){
   if(more) more.addEventListener('click', () => { state.showAllAuthors = !state.showAllAuthors; renderFilters(); });
 }
 
+/* ---------------- year histogram ---------------- */
+function renderHist(){
+  const el = document.getElementById('hist');
+  if(!YEARS.length){ el.hidden = true; return; }
+  el.hidden = false;
+  const shown = new Map();
+  RECORDS.filter(r => r.year && matches(r, 'year'))
+    .forEach(r => shown.set(r.year, (shown.get(r.year)||0)+1));
+
+  const span = YEARS[0] + '\u2013' + YEARS[YEARS.length-1];
+  let bars = '';
+  YEARS.forEach(y => {
+    const tot = YEAR_TOTALS.get(y) || 0;
+    const now = shown.get(y) || 0;
+    const on  = state.years.has(y);
+    bars += `<button class="bar" data-facet="year" data-val="${y}" aria-pressed="${on}"
+      title="${y}: ${tot} ${tot===1?'entry':'entries'}${now!==tot?', '+now+' matching the current filters':''}">
+      <span class="barbody"><span class="ghost" style="height:${Math.max(2, tot/YEAR_MAX*100)}%">
+        <span class="fill" style="height:${tot ? now/tot*100 : 0}%"></span></span></span>
+      <span class="lab"><span class="y4">${y}</span><span class="y2">${String(y).slice(2)}</span></span>
+    </button>`;
+  });
+  el.innerHTML = `<div class="hist-head"><b>Entries per year, ${span}</b>
+      <span>${state.years.size ? 'Filtering ' + [...state.years].sort().join(', ') + ' \u2014 click again to release' : 'Click a year to filter'}</span>
+    </div><div class="bars">${bars}</div>`;
+
+  el.querySelectorAll('[data-facet="year"]').forEach(b => b.addEventListener('click', () => {
+    const y = parseInt(b.dataset.val, 10);
+    state.years.has(y) ? state.years.delete(y) : state.years.add(y);
+    renderFilters(); render(); pushHash();
+  }));
+}
+
 /* ---------------- results ---------------- */
 function highlight(text){
   const ts = tokens(state.q).filter(t => t.length > 2);
@@ -589,7 +683,10 @@ function pubHTML(r){
   const shown = r.topics.slice(0,5);
   const tags = shown.map(t => `<button class="tag" data-topic="${esc(t)}">${esc(t)}</button>`).join('') +
     (r.topics.length > 5 ? `<button class="tag" data-showtags="${r.id}">+${r.topics.length-5} more</button>` : '');
-  const kind = r.complete || r.type !== 'Other' ? `<span class="kind">${esc(r.type)}</span>` : '<span class="kind">Needs metadata</span>';
+  const reviewed = ['Journal article','Review article','Book chapter'].includes(r.type) ? ' reviewed' : '';
+  const kind = r.complete || r.type !== 'Other'
+    ? `<span class="kind${reviewed}">${esc(r.type)}</span>`
+    : '<span class="kind">Needs metadata</span>';
   const tools = [];
   if(r.abstract) tools.push(`<button data-abstract="${r.id}">Abstract</button>`);
   if(r.doi) tools.push(`<a href="${esc(r.doi)}" target="_blank" rel="noopener">DOI</a>`);
@@ -605,6 +702,7 @@ function pubHTML(r){
 }
 
 function render(){
+  renderHist();
   const list = selected(null);
   const el = document.getElementById('results');
 
