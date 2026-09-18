@@ -67,6 +67,11 @@ Abstracts are on file for 329 entries, and those are what search and tagging wor
 where an abstract is missing, tagging falls back to the title alone, so an older expanded
 abstract can carry fewer tags than it deserves.
 
+Entries with no DOI on file link to the AASPI publications page at
+`mcee.ou.edu/aaspi/publications.html` instead, and carry a dashed label saying so, so a title
+link is never mistaken for a link to the paper itself. Replacing that URL with a real DOI
+clears the label automatically.
+
 Cells reading `none` or `MISSING` are treated as empty, so they never become a broken link
 or a printed abstract. Publisher HTML in an abstract is stripped, escaped angle brackets are
 restored, and a leading "Abstract" or "Summary" is trimmed off.
@@ -74,7 +79,11 @@ restored, and a leading "Abstract" or "Summary" is trimmed off.
 ## Keeping it up to date
 
 Replace `data/AASPI_pubs.xlsx` with a new export, keeping the file name and the sheet named
-`Complete`. Nothing else needs editing — the page reads the spreadsheet in the browser, so
+`Complete`. The file name matters: the page reads `data/AASPI_pubs.xlsx` first and only falls
+back to `AASPI_pubs_working_list.xlsx` or `AASPI_pubs_with_additions.xlsx` if that name is
+absent, so uploading a new spreadsheet under a different name leaves the old one in charge.
+The footer prints which file it read and how many rows came out of it, which is the quickest
+way to tell whether an upload took. Nothing else needs editing — the page reads the spreadsheet in the browser, so
 the new list is live as soon as Pages rebuilds. Columns used are Title, Year, Type, Authors,
 Journal, DOI, URL, and Abstract; everything else in the sheet is ignored, so the working file
 can stay as it is.

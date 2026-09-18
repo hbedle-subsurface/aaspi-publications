@@ -200,6 +200,10 @@ h1{
   border:1px solid var(--rule);background:var(--wash);
   padding:2px 7px;border-radius:2px;
 }
+.listedon{
+  font-size:12px;color:var(--slate);border:1px dashed var(--rule);
+  padding:2px 7px;border-radius:2px;
+}
 .kind.reviewed{color:var(--crimson-dark);border-color:rgba(132,22,23,.35);background:rgba(132,22,23,.06)}
 .tag{
   font-size:12.5px;color:var(--slate);background:var(--wash);border:1px solid var(--rule);
@@ -233,6 +237,8 @@ footer .mark{
 @media (max-width:560px){footer .mark{width:40px;height:40px}}
 footer p{margin:0 0 7px;max-width:80ch}
 #viewcount{font-family:var(--serif);font-style:italic;color:var(--crimson-dark);margin-bottom:10px}
+#sourceline{font-size:13px;color:var(--slate)}
+#sourceline code{font-size:12.5px}
 .loading{padding:50px 0;color:var(--slate)}
 @media (prefers-reduced-motion:no-preference){
   .pub{transition:background .12s ease}
@@ -287,6 +293,7 @@ footer p{margin:0 0 7px;max-width:80ch}
   <img class="mark" src="assets/aaspi-mark.png" alt="AASPI" onerror="this.remove()">
   <p><strong>Updating the list:</strong> replace <code>data/AASPI_pubs.xlsx</code> in this repository, keeping the file name and the <code>Complete</code> sheet. The page reads the spreadsheet directly, so a new upload changes the list with no other edits. Column names it expects: Title, Year, Type, Authors, Journal, DOI, URL, Abstract.</p>
   <p id="viewcount" hidden></p>
+  <p id="sourceline" hidden></p>
   <p>Compiled by Heather Bedle, School of Geosciences, University of Oklahoma. This list is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; the publications themselves stay with their publishers.</p>
 </footer>
 
@@ -298,7 +305,7 @@ footer p{margin:0 0 7px;max-width:80ch}
    SheetJS, builds facets, and renders the list grouped by year.
    ------------------------------------------------------------- */
 
-const DATA_FILES = ['data/AASPI_pubs.xlsx', 'data/AASPI_pubs_working_list.xlsx'];
+const DATA_FILES = ['data/AASPI_pubs.xlsx', 'data/AASPI_pubs_working_list.xlsx', 'data/AASPI_pubs_with_additions.xlsx'];
 const SHEET = 'Complete';
 
 /* ---- type labels ---- */
@@ -479,6 +486,7 @@ async function load(){
     try{
       const res = await fetch(file, {cache:'no-store'});
       if(!res.ok) throw new Error('HTTP ' + res.status);
+      LOADED_FROM = file;
       build(new Uint8Array(await res.arrayBuffer()));
       return;
     }catch(e){ err = e; }
@@ -552,6 +560,13 @@ function build(buf){
   YEARS = [...YEAR_TOTALS.keys()].sort((a,b) => a-b);
   YEAR_MAX = Math.max(...YEAR_TOTALS.values());
 
+  const src = document.getElementById('sourceline');
+  if(src && LOADED_FROM){
+    src.innerHTML = 'Reading <code>' + esc(LOADED_FROM) + '</code>: ' + rows.length +
+      ' rows, ' + RECORDS.length + ' entries, ' + YEARS[0] + '\u2013' + YEARS[YEARS.length-1] + '.';
+    src.hidden = false;
+  }
+
   renderFilters();
   render();
   wire();
@@ -559,6 +574,7 @@ function build(buf){
 
 let AUTHOR_DISPLAY = {};
 let YEAR_TOTALS = new Map(), YEARS = [], YEAR_MAX = 1;
+let LOADED_FROM = '';
 
 /* Two rows describing one paper turn up whenever the same publication is
    entered twice. Rows sharing a DOI are the same paper, and a row with no year
@@ -773,6 +789,7 @@ function pubHTML(r){
   const kind = r.complete || r.type !== 'Other'
     ? `<span class="kind${reviewed}">${esc(r.type)}</span>`
     : '<span class="kind">Needs metadata</span>';
+  const listed = /mcee\.ou\.edu\/aaspi\/publications/i.test(r.url);
   const tools = [];
   if(r.abstract) tools.push(`<button data-abstract="${r.id}">Abstract</button>`);
   if(r.doi) tools.push(`<a href="${esc(r.doi)}" target="_blank" rel="noopener">DOI</a>`);
@@ -781,7 +798,7 @@ function pubHTML(r){
     <h3>${title}</h3>
     <p class="authors">${authors}</p>
     ${venue ? `<p class="venue">${venue}</p>` : ''}
-    <div class="meta">${kind}${tags}</div>
+    <div class="meta">${kind}${listed ? '<span class="listedon">Links to the AASPI list, no DOI on file</span>' : ''}${tags}</div>
     <div class="pubtools">${tools.join('')}</div>
     ${r.abstract ? `<p class="abstract" id="abs-${r.id}" hidden>${highlight(r.abstract)}</p>` : ''}
   </article>`;
