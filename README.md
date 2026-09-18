@@ -85,8 +85,13 @@ absent, so uploading a new spreadsheet under a different name leaves the old one
 The footer prints which file it read and how many rows came out of it, which is the quickest
 way to tell whether an upload took. Nothing else needs editing — the page reads the spreadsheet in the browser, so
 the new list is live as soon as Pages rebuilds. Columns used are Title, Year, Type, Authors,
-Journal, DOI, URL, and Abstract; everything else in the sheet is ignored, so the working file
-can stay as it is.
+Journal, DOI, URL, Backup URL, and Abstract; everything else in the sheet is ignored, so the
+working file can stay as it is.
+
+URL holds the copy on the AASPI server where one exists, since those PDF addresses outlive
+publisher URLs, and Backup URL keeps whatever publisher link the row had before. In the list
+an entry then shows a PDF link, a DOI link where there is one, and a publisher-page link
+otherwise.
 
 Topic tags are not stored in the spreadsheet. They come from the `TOPICS` dictionary near the
 top of the script in `index.html`, one line per tag:

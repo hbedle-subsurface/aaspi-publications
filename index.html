@@ -202,8 +202,9 @@ h1{
 }
 .listedon{
   font-size:12px;color:var(--slate);border:1px dashed var(--rule);
-  padding:2px 7px;border-radius:2px;
+  padding:2px 7px;border-radius:2px;text-decoration:none;
 }
+.listedon:hover{color:var(--crimson);border-color:var(--crimson);border-style:solid}
 .kind.reviewed{color:var(--crimson-dark);border-color:rgba(132,22,23,.35);background:rgba(132,22,23,.06)}
 .tag{
   font-size:12.5px;color:var(--slate);background:var(--wash);border:1px solid var(--rule);
@@ -527,9 +528,10 @@ function build(buf){
                   : (/^10\./.test(field(r.DOI)) ? 'https://doi.org/' + field(r.DOI) : '');
     const rawUrl  = field(r.URL);
     const url     = /^https?:\/\//i.test(rawUrl) ? rawUrl : doi;
+    const backup  = /^https?:\/\//i.test(field(r['Backup URL'])) ? field(r['Backup URL']) : '';
     const people  = authors.map(a => ({name:a, id:authorKey(a)})).filter(a => a.id);
     return {
-      title, authors, people, venue, abstract,
+      title, authors, people, venue, abstract, backup,
       year: Number.isFinite(yr) ? yr : null,
       type: yr ? type : (typeRaw ? type : 'Other'),
       complete: Boolean(yr),
@@ -789,16 +791,19 @@ function pubHTML(r){
   const kind = r.complete || r.type !== 'Other'
     ? `<span class="kind${reviewed}">${esc(r.type)}</span>`
     : '<span class="kind">Needs metadata</span>';
-  const listed = /mcee\.ou\.edu\/aaspi\/publications/i.test(r.url);
+  const listed = /mcee\.ou\.edu\/aaspi\/publications\.html/i.test(r.url);
   const tools = [];
   if(r.abstract) tools.push(`<button data-abstract="${r.id}">Abstract</button>`);
+  if(/mcee\.ou\.edu.*\.pdf$/i.test(r.url)) tools.push(`<a href="${esc(r.url)}" target="_blank" rel="noopener">PDF</a>`);
   if(r.doi) tools.push(`<a href="${esc(r.doi)}" target="_blank" rel="noopener">DOI</a>`);
+  else if(r.backup) tools.push(`<a href="${esc(r.backup)}" target="_blank" rel="noopener">Publisher page</a>`);
+  else if(listed) tools.push(`<a href="${esc(r.url)}" target="_blank" rel="noopener">AASPI list</a>`);
   tools.push(`<button data-cite="${r.id}">Copy reference</button>`);
   return `<article class="pub" id="pub-${r.id}">
     <h3>${title}</h3>
     <p class="authors">${authors}</p>
     ${venue ? `<p class="venue">${venue}</p>` : ''}
-    <div class="meta">${kind}${listed ? '<span class="listedon">Links to the AASPI list, no DOI on file</span>' : ''}${tags}</div>
+    <div class="meta">${kind}${listed ? `<a class="listedon" href="${esc(r.url)}" target="_blank" rel="noopener">On the AASPI list, no DOI on file</a>` : ''}${tags}</div>
     <div class="pubtools">${tools.join('')}</div>
     ${r.abstract ? `<p class="abstract" id="abs-${r.id}" hidden>${highlight(r.abstract)}</p>` : ''}
   </article>`;
