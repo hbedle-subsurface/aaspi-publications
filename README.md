@@ -35,8 +35,7 @@ Tags combine, so *Deepwater channels* plus *New Zealand* plus *Machine learning*
 Taranaki facies work and little else. Every tag printed under an entry is clickable, which
 is a quick way to find the neighbors of a paper already in front of you.
 
-**Author** lists everyone in the bibliography, most prolific first, with a find box for the
-long tail. `H. Bedle` and `Heather Bedle` count as one person, since names are matched on
+**Author** lists everyone in the bibliography. `H. Bedle` and `Heather Bedle` count as one person, since names are matched on
 surname plus first initial. Author names inside an entry are clickable too.
 
 Each entry gives the title as a link to the DOI or publisher page, an expandable abstract
