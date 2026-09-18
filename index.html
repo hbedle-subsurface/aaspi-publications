@@ -484,7 +484,7 @@ async function load(){
   let err = null;
   for(const file of DATA_FILES){
     try{
-      const res = await fetch(file, {cache:'no-store'});
+      const res = await fetch(file + '?t=' + Math.floor(Date.now()/60000), {cache:'no-store'});
       if(!res.ok) throw new Error('HTTP ' + res.status);
       LOADED_FROM = file;
       build(new Uint8Array(await res.arrayBuffer()));
