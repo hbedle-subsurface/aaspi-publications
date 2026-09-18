@@ -58,11 +58,18 @@ Useful for sponsor email, a reading list for a new student, or the annual review
 
 ## What is and is not in the list
 
-425 entries. 383 have full metadata; 42 still hold only a title and sit in a group at the
-bottom, hidden until the *Include 42 without year or type* box in the sidebar is checked.
-Abstracts are on file for 259 entries, and those are what search and tagging work best on:
+The spreadsheet holds 434 rows. Eight of those are the same paper entered twice, which the
+page merges on load (rows sharing a DOI, and a row with no year whose title repeats one
+already present), leaving 426 entries. 421 carry a year; the remaining 5 sit in a group at
+the bottom, hidden until the *Include 5 without year or type* box in the sidebar is checked.
+
+Abstracts are on file for 329 entries, and those are what search and tagging work best on:
 where an abstract is missing, tagging falls back to the title alone, so an older expanded
 abstract can carry fewer tags than it deserves.
+
+Cells reading `none` or `MISSING` are treated as empty, so they never become a broken link
+or a printed abstract. Publisher HTML in an abstract is stripped, escaped angle brackets are
+restored, and a leading "Abstract" or "Summary" is trimmed off.
 
 ## Keeping it up to date
 
@@ -89,9 +96,41 @@ arrive under `/aaspi-publications/` and stay separable from the other repos.
 
 It counts three things:
 
-- **page views**, 
-- **filter and search use**,
-- **the view count itself**
+- **page views**, the ordinary GoatCounter hit on load
+- **filter and search use**, sent as GoatCounter events under names like
+  `aaspi-publications/topic/Geothermal`, `aaspi-publications/year/2024`, and
+  `aaspi-publications/author/Heather Bedle`. Opening an abstract and copying a reference
+  come through as `aaspi-publications/action/...`. Each name is sent at most once per visit,
+  so the Events list on the dashboard reads as *how many people used this topic*, not how
+  many times somebody clicked around.
+
+  Typed searches are counted against the same vocabulary rather than recorded verbatim. A
+  term is run through the topic patterns and the list of author surnames, so `taranaki`
+  arrives as `search/New Zealand`, `som` as `search/Self-organizing maps`, and `lubo-robles`
+  as `search/David Lubo-Robles`. Anything that matches nothing arrives as `search/other`,
+  which keeps the amount of searching visible without building a list of what people typed.
+  Terms are only counted once someone stops typing for two and a half seconds, so partial
+  words never register.
+- **the view count itself**, read back from GoatCounter and printed as a line in the page
+  footer. This one needs *Allow adding visitor counts on your website* switched on in the
+  GoatCounter site settings; until it is, the request comes back empty and the footer line
+  stays hidden rather than showing an error.
+
+Three flags at the top of `count.js` turn the pieces off independently: `TRACK_FILTERS`,
+`TRACK_SEARCHES`, and `SHOW_COUNT`. Every event name is one of the labels defined in this
+repo, so the Events list stays about the length of the tag list; GoatCounter sets no cookies
+and keeps no IP addresses. Counting is skipped on `file://`, on localhost, and in
+`preview.html`.
+
+The matcher lives in `searchVocabHits()` in `index.html`, next to the `TOPICS` dictionary it
+draws on, so a new tag widens what searches can be recognized without any other change.
+
+## Previewing without a server
+
+`preview.html` is a standalone copy with the images and the spreadsheet embedded in the file,
+for opening straight off a disk or emailing to someone. It is a snapshot: it does not follow
+changes to `data/AASPI_pubs.xlsx`, so regenerate it (or just use the live site) after an
+update. `index.html` is what Pages serves.
 
 ## Credit and license
 

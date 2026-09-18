@@ -247,7 +247,7 @@ footer p{margin:0 0 7px;max-width:80ch}
          alt="Mewbourne College of Earth and Energy &mdash; Attribute-Assisted Seismic Processing &amp; Interpretation, The University of Oklahoma">
     <div class="hero">
       <div class="hero-main">
-        <h1>AASPI Publications</h1>
+        <h1>Publications</h1>
         <p class="standfirst">Everything the consortium has published: journal papers, expanded abstracts, magazine columns, and preprints. Search a title, an author, a basin, or an attribute.</p>
         <div class="searchbar">
           <div class="searchfield">
@@ -306,6 +306,9 @@ const TYPE_LABELS = {
   'journal-article':'Journal article',
   'journalarticle':'Journal article',
   'review':'Review article',
+  'research article':'Journal article',
+  'research-article':'Journal article',
+  'article':'Journal article',
   'proceedings-article':'Expanded abstract',
   'conference-abstract':'Conference abstract',
   'magazine-article':'Magazine column',
@@ -411,6 +414,19 @@ const decode = s => !s ? '' : String(s)
 
 const clean = s => decode(s).replace(/\s+/g,' ').replace(/\/td>$/,'').trim();
 
+const PLACEHOLDER = /^(none|n\/?a|missing|unknown|tbd|null|-{1,2})$/i;
+const field = v => { const t = clean(v); return PLACEHOLDER.test(t) ? '' : t; };
+
+/* Abstracts arrive from several publishers: some carry HTML tags, some escape
+   their own angle brackets, and many repeat the word "Abstract" first. Tags go
+   before entities are decoded, so a decoded "<" in the text survives. */
+function cleanAbstract(raw){
+  if(raw === null || raw === undefined) return '';
+  let t = String(raw).replace(/<\/?[a-z][^>]{0,60}>/gi, ' ');
+  t = clean(t).replace(/^(abstract|summary)\s*[:.\u2014-]?\s+/i, '');
+  return PLACEHOLDER.test(t) ? '' : t;
+}
+
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const PARTICLES = new Set(['de','del','da','dos','van','von','der','la','le','di','du','al','bin','ben']);
@@ -490,20 +506,22 @@ function build(buf){
   const sheet = wb.Sheets[SHEET] || wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sheet, {defval:null});
 
-  RECORDS = rows.map((r, idx) => {
+  RECORDS = rows.map(r => {
     const title   = clean(r.Title);
-    const authors = splitAuthors(r.Authors);
-    const venue   = clean(r.Journal);
-    const abstract= clean(r.Abstract);
+    const authors = splitAuthors(field(r.Authors));
+    const venue   = field(r.Journal);
+    const abstract= cleanAbstract(r.Abstract);
     const yearRaw = r.Year;
     const yr      = yearRaw === null || yearRaw === '' ? null : parseInt(String(yearRaw).replace(/[^\d]/g,''),10);
     const typeRaw = (r.Type || '').toString().trim().toLowerCase();
     const type    = TYPE_LABELS[typeRaw] || (typeRaw ? typeRaw.replace(/-/g,' ').replace(/^./,c=>c.toUpperCase()) : 'Other');
-    const doi     = clean(r.DOI);
-    const url     = clean(r.URL) || doi;
+    const doi     = /^https?:\/\//i.test(field(r.DOI)) ? field(r.DOI)
+                  : (/^10\./.test(field(r.DOI)) ? 'https://doi.org/' + field(r.DOI) : '');
+    const rawUrl  = field(r.URL);
+    const url     = /^https?:\/\//i.test(rawUrl) ? rawUrl : doi;
     const people  = authors.map(a => ({name:a, id:authorKey(a)})).filter(a => a.id);
     return {
-      id: idx, title, authors, people, venue, abstract,
+      title, authors, people, venue, abstract,
       year: Number.isFinite(yr) ? yr : null,
       type: yr ? type : (typeRaw ? type : 'Other'),
       complete: Boolean(yr),
@@ -512,6 +530,9 @@ function build(buf){
       hay: [title, authors.join(' '), venue, abstract].join(' \n ').toLowerCase()
     };
   }).filter(r => r.title);
+
+  RECORDS = dedupe(RECORDS);
+  RECORDS.forEach((r, i) => r.id = i);
 
   /* author display names: keep the fullest form seen for each key */
   const variants = {};
@@ -538,6 +559,31 @@ function build(buf){
 
 let AUTHOR_DISPLAY = {};
 let YEAR_TOTALS = new Map(), YEARS = [], YEAR_MAX = 1;
+
+/* Two rows describing one paper turn up whenever the same publication is
+   entered twice. Rows sharing a DOI are the same paper, and a row with no year
+   whose title repeats one already in the list is a stub of it; in both cases
+   the fuller record is the one kept. */
+function dedupe(list){
+  const doiKey = r => r.doi.toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//,'').replace(/[.\s]+$/,'');
+  const titleKey = r => r.title.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  const weight = r => (r.year?4:0) + (r.abstract?3:0) + (r.people.length?2:0) + (r.venue?1:0) + (r.doi?1:0);
+
+  const keep = new Map(), order = [];
+  list.forEach(r => {
+    const k = r.doi ? 'doi:' + doiKey(r) : (r.year ? 'row:' + order.length : 'ttl:' + titleKey(r));
+    const prev = keep.get(k);
+    if(!prev){ keep.set(k, r); order.push(k); }
+    else if(weight(r) > weight(prev)) keep.set(k, r);
+  });
+  const titled = new Map();
+  keep.forEach(r => { if(r.year) titled.set(titleKey(r), true); });
+  const out = order.map(k => keep.get(k))
+    .filter(r => r.year || !titled.has(titleKey(r)));
+  const dropped = list.length - out.length;
+  if(dropped) console.info('AASPI publications: ' + dropped + ' duplicate row(s) merged out of ' + list.length + '.');
+  return out;
+}
 
 /* ---------------- filtering ---------------- */
 function tokens(q){
