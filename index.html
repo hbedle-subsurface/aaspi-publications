@@ -59,6 +59,22 @@ h1{
   padding:4px 8px;cursor:pointer;display:none;
 }
 .tally{color:var(--slate);font-size:14.5px}
+.activebar{
+  flex-basis:100%;display:flex;flex-wrap:wrap;gap:7px;align-items:center;
+  margin-top:11px;font-size:13.5px;color:var(--slate);
+}
+.activebar .lbl{color:var(--crimson);font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;font-size:12px}
+.activebar .act{
+  font:inherit;font-size:13.5px;background:var(--crimson);color:#fff;border:0;
+  padding:3px 9px;border-radius:2px;cursor:pointer;
+}
+.activebar .act::after{content:" \00d7";opacity:.75}
+.activebar .clearall{
+  font:inherit;font-size:13.5px;background:none;border:1px solid var(--rule);
+  color:var(--ink);padding:3px 9px;border-radius:2px;cursor:pointer;
+}
+.activebar .clearall:hover{border-color:var(--crimson);color:var(--crimson)}
 .tally b{color:var(--ink);font-variant-numeric:tabular-nums}
 
 .lockup{display:block;width:100%;max-width:640px;height:auto;margin:2px 0 20px}
@@ -264,6 +280,7 @@ footer p{margin:0 0 7px;max-width:80ch}
           </div>
           <p class="tally" id="tally">Loading&hellip;</p>
         </div>
+        <div class="activebar" id="activebar" hidden></div>
       </div>
       <figure class="group">
         <img src="assets/aaspi-group.jpg" onerror="this.closest('figure').remove()" alt="Members of the AASPI group outside the Sarkeys Energy Center">
@@ -613,6 +630,7 @@ function matches(r, skip){
   if(skip !== 'q' && state.q){
     for(const t of tokens(state.q)) if(!r.hay.includes(t)) return false;
   }
+  if(skip === 'facets') return true;
   if(skip !== 'year' && state.years.size && !state.years.has(r.year)) return false;
   if(skip !== 'type' && state.types.size && !state.types.has(r.type)) return false;
   if(skip !== 'topic' && state.topics.size){
@@ -809,7 +827,40 @@ function pubHTML(r){
   </article>`;
 }
 
+function renderActive(){
+  const bar = document.getElementById('activebar');
+  if(!bar) return;
+  const bits = [];
+  if(state.q) bits.push(['q', state.q, 'search: ' + state.q]);
+  [...state.years].sort((a,b)=>b-a).forEach(y => bits.push(['year', y, y]));
+  [...state.types].forEach(t => bits.push(['type', t, t]));
+  [...state.topics].forEach(t => bits.push(['topic', t, t]));
+  [...state.authors].forEach(a => bits.push(['author', a, AUTHOR_DISPLAY[a] || a]));
+  if(!bits.length){ bar.hidden = true; bar.innerHTML = ''; return; }
+  bar.hidden = false;
+  bar.innerHTML = '<span class="lbl">Filtered by</span>' +
+    bits.map(([k,v,label]) =>
+      `<button class="act" data-clear="${esc(k)}" data-val="${esc(String(v))}">${esc(String(label))}</button>`).join('') +
+    '<button class="clearall" id="clearall">Show all ' + RECORDS.length + ' entries</button>';
+
+  bar.querySelectorAll('[data-clear]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.clear, v = b.dataset.val;
+    if(k === 'q'){ state.q = ''; document.getElementById('q').value = ''; syncClear(); }
+    else if(k === 'year') state.years.delete(parseInt(v,10));
+    else if(k === 'type') state.types.delete(v);
+    else if(k === 'topic') state.topics.delete(v);
+    else state.authors.delete(v);
+    renderFilters(); render(); pushHash();
+  }));
+  document.getElementById('clearall').addEventListener('click', () => {
+    state.q = ''; document.getElementById('q').value = ''; syncClear();
+    state.years.clear(); state.types.clear(); state.topics.clear(); state.authors.clear();
+    renderFilters(); render(); pushHash();
+  });
+}
+
 function render(){
+  renderActive();
   renderHist();
   const list = selected(null);
   const el = document.getElementById('results');
@@ -819,9 +870,31 @@ function render(){
     `<b>${list.length}</b> of ${RECORDS.length} entries` + (withAbs ? ` &middot; ${withAbs} with abstracts` : '');
 
   if(!list.length){
-    el.innerHTML = '<div class="empty"><h2>Nothing matches those filters</h2>' +
-      '<p>Try a single keyword, or clear a filter in the panel. Titles, authors, venues, and abstract text are all searched, ' +
-      'though abstracts are only present for some entries so far.</p></div>';
+    /* say which filter is doing the blocking, and how many the search alone would find */
+    const others = state.years.size + state.types.size + state.topics.size + state.authors.size;
+    const searchOnly = state.q ? RECORDS.filter(r => matches(r, 'facets')).length : 0;
+    let why = '';
+    if(state.q && others && searchOnly){
+      const names = [
+        [...state.years].sort((a,b)=>b-a).join(', '),
+        [...state.types].join(', '),
+        [...state.topics].join(', '),
+        [...state.authors].map(a => AUTHOR_DISPLAY[a] || a).join(', ')
+      ].filter(Boolean).join(' &middot; ');
+      why = `<p><strong>${esc(state.q)}</strong> matches ${searchOnly} ` +
+            `${searchOnly === 1 ? 'entry' : 'entries'} overall, but none of them sit inside the filters ` +
+            `still switched on: ${esc(names)}.</p>` +
+            `<p><button class="reset" style="width:auto" id="keepsearch">Drop those filters and keep the search</button></p>`;
+    }else{
+      why = '<p>Titles, authors, venues, and abstract text are all searched, though abstracts are ' +
+            'only present for some entries so far. A single keyword usually casts wider than two.</p>';
+    }
+    el.innerHTML = '<div class="empty"><h2>Nothing matches those filters</h2>' + why + '</div>';
+    const keep = document.getElementById('keepsearch');
+    if(keep) keep.addEventListener('click', () => {
+      state.years.clear(); state.types.clear(); state.topics.clear(); state.authors.clear();
+      renderFilters(); render(); pushHash();
+    });
     return;
   }
 
