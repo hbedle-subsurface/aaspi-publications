@@ -3,7 +3,7 @@
 **[hbedle-subsurface.github.io/aaspi-publications](https://hbedle-subsurface.github.io/aaspi-publications/)**
 
 Everything the AASPI consortium has published, in one searchable list: journal papers,
-expanded abstracts, magazine columns, preprints, and book chapters. Built for the question
+expanded abstracts, industry newsletter articles, preprints, and book chapters. Built for the question
 that usually comes up in the middle of a project — has anyone in the group already worked on
 this attribute, in this basin?
 
@@ -20,7 +20,8 @@ currently set, so the chart shows where a topic sits in time: a search for `mach
 leaves almost nothing before 2014 and fills the bars after it.
 
 **Type** separates peer-reviewed papers from expanded abstracts, conference abstracts,
-magazine columns, and preprints. Peer-reviewed entries carry a crimson label in the list.
+industry newsletter articles, preprints, books and chapters, reports, and theses and dissertations.
+Peer-reviewed entries carry a crimson label in the list.
 
 **Topic** tags each entry from its title, venue, and abstract, in three groups:
 
@@ -57,12 +58,19 @@ Useful for sponsor email, a reading list for a new student, or the annual review
 
 ## What is and is not in the list
 
-The spreadsheet holds 434 rows. Eight of those are the same paper entered twice, which the
+The spreadsheet holds 700 rows. Thirteen of those are the same paper entered twice, which the
 page merges on load (rows sharing a DOI, and a row with no year whose title repeats one
-already present), leaving 426 entries. 421 carry a year; the remaining 5 sit in a group at
+already present), leaving 687 entries. 682 carry a year; the remaining 5 sit in a group at
 the bottom, hidden until the *Include 5 without year or type* box in the sidebar is checked.
+Three of those five also have no type, so they are the only entries filed under *Other*, and
+that filter appears only while they are showing.
 
-Abstracts are on file for 329 entries, and those are what search and tagging work best on:
+By type, the 687 entries are 267 journal articles, 226 expanded abstracts, 105 theses and
+dissertations, 34 industry newsletter articles, 28 conference abstracts, 14 reports, 5 book
+chapters, 4 preprints, 1 book, and the 3 untyped entries. These counts are as of the
+October 2026 spreadsheet and change whenever it is replaced.
+
+Abstracts are on file for 644 entries, and those are what search and tagging work best on:
 where an abstract is missing, tagging falls back to the title alone, so an older expanded
 abstract can carry fewer tags than it deserves.
 
@@ -83,7 +91,11 @@ back to `AASPI_pubs_working_list.xlsx` or `AASPI_pubs_with_additions.xlsx` if th
 absent, so uploading a new spreadsheet under a different name leaves the old one in charge.
 The footer prints which file it read and how many rows came out of it, which is the quickest
 way to tell whether an upload took. Nothing else needs editing — the page reads the spreadsheet in the browser, so
-the new list is live as soon as Pages rebuilds. Columns used are Title, Year, Type, Authors,
+the new list is live as soon as Pages rebuilds. Type values should be lowercase and hyphenated: `journal-article`, `proceedings-article`,
+`conference-abstract`, `magazine-article` (shown as Industry newsletter), `posted-content`, `book-chapter`, `book`, `thesis`,
+`report`. Variants such as `JournalArticle` or `Research Article` still read as journal articles,
+but keeping the sheet consistent makes it easier to filter and sort in Excel too.
+Columns used are Title, Year, Type, Authors,
 Journal, DOI, URL, Backup URL, and Abstract; everything else in the sheet is ignored, so the
 working file can stay as it is.
 

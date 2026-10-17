@@ -271,7 +271,7 @@ footer p{margin:0 0 7px;max-width:80ch}
     <div class="hero">
       <div class="hero-main">
         <h1>Publications</h1>
-        <p class="standfirst">Everything the consortium has published: journal papers, expanded abstracts, magazine columns, and preprints. Search a title, an author, a basin, or an attribute.</p>
+        <p class="standfirst">Everything the consortium has published: journal papers, expanded abstracts, industry newsletter articles, and preprints. Search a title, an author, a basin, or an attribute.</p>
         <div class="searchbar">
           <div class="searchfield">
             <label for="q" style="position:absolute;left:-9999px">Search publications</label>
@@ -336,13 +336,16 @@ const TYPE_LABELS = {
   'article':'Journal article',
   'proceedings-article':'Expanded abstract',
   'conference-abstract':'Conference abstract',
-  'magazine-article':'Magazine column',
+  'magazine-article':'Industry newsletter',
   'posted-content':'Preprint',
   'book-chapter':'Book chapter',
+  'thesis':'Thesis',
+  'dissertation':'Thesis',
+  'book':'Book',
   'report':'Report'
 };
 const TYPE_ORDER = ['Journal article','Review article','Expanded abstract','Conference abstract',
-                    'Magazine column','Preprint','Book chapter','Report','Other'];
+                    'Industry newsletter','Preprint','Book chapter','Book','Thesis','Report','Other'];
 
 /* ---- topic dictionary: label -> pattern ---- */
 const TOPICS = {
@@ -658,7 +661,7 @@ function renderFilters(){
   const topicC  = counts('topic',  r => r.topics);
   const authorC = counts('author', r => r.people.map(p => p.id.key));
 
-  const types = TYPE_ORDER.filter(t => [...typeC.keys()].includes(t) || RECORDS.some(r=>r.type===t));
+  const types = TYPE_ORDER.filter(t => t === 'Other' ? (typeC.get(t) || 0) > 0 : ([...typeC.keys()].includes(t) || RECORDS.some(r=>r.type===t)));
 
   let html = '';
 
